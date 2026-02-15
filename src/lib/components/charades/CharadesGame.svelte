@@ -22,5 +22,5 @@
 </div>
 
 {#if game.status === 'finished'}
-	<TimesUpOverlay />
+	<TimesUpOverlay {game} />
 {/if}

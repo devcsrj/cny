@@ -5,6 +5,7 @@ export class Charades {
 	status = $state<CharadesStatus>('waiting');
 	duration = $state(60);
 	timeLeft = $state(60);
+	score = $state(0);
 
 	private timerId: number | null = null;
 
@@ -40,12 +41,16 @@ export class Charades {
 		this.stopTimer();
 		this.status = 'waiting';
 		this.timeLeft = this.duration;
+		this.score = 0;
 	}
 
-	finish() {
+	finish(score?: number) {
 		this.stopTimer();
 		this.status = 'finished';
 		this.timeLeft = 0;
+		if (score !== undefined) {
+			this.score = score;
+		}
 	}
 
 	private resumeTimer() {
