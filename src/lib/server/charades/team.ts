@@ -6,7 +6,7 @@ export class Team {
 	public id = nanoid();
 	public name = 'New Team';
 	public words: Word[] = [];
-	private currentWordIndex = 0;
+	public currentWordIndex = 0;
 
 	nextWord() {
 		if (this.words.length === 0) return;

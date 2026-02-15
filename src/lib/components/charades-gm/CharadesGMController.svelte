@@ -4,25 +4,9 @@
 	import GameStage from './GameStage.svelte';
 	import ActionZone from './ActionZone.svelte';
 	import SetupTray from './SetupTray.svelte';
-	import { CharadesGM, type GMTeam } from './gm.svelte.js';
+	import type { CharadesGM } from './gm.svelte.js';
 
-	// Hardcoded data
-	const initialTeams: GMTeam[] = [
-		{
-			id: '1',
-			name: 'Dragons',
-			score: 0,
-			words: ['Spider-Man', 'Elephant', 'Piano', 'Baking a Cake', 'Riding a Bike', 'Mona Lisa']
-		},
-		{
-			id: '2',
-			name: 'Phoenixes',
-			score: 0,
-			words: ['Michael Jackson', 'Doctor', 'Swimming', 'Firefighter', 'Pizza', 'Space Shuttle']
-		}
-	];
-
-	const gm = new CharadesGM(initialTeams, 60);
+	let { gm }: { gm: CharadesGM } = $props();
 
 	function handleReset() {
 		if (confirm('Are you sure you want to reset the entire game?')) {

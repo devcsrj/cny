@@ -6,7 +6,26 @@
 	const game = new Charades('', 60);
 
 	onMount(() => {
-		const path = `/api/bookings/subscribe`;
+		(async () => {
+			// 1. Fetch initial state
+			try {
+				const res = await fetch('/___/charades');
+				const state = await res.json();
+				// We can use the dispatch tool or just sync directly
+				game.sync(
+					state.timer.totalDuration,
+					state.timer.remainingTime,
+					state.timer.isRunning,
+					state.timer.serverTimestamp
+				);
+				if (state.currentWord) game.setWord(state.currentWord);
+			} catch (e) {
+				console.error('Failed to load initial state', e);
+			}
+		})();
+
+		// 2. Subscribe to updates
+		const path = `/api/charades/subscribe`;
 		const es = new EventSource(path);
 		es.addEventListener('message', async (e) => {
 			const payload = JSON.parse(e.data) as CharadesCommand;

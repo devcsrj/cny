@@ -1,6 +1,7 @@
 import { Timer } from '../timer';
 import { Team } from './team';
 import { Word } from './word';
+import type { CharadesStateData } from '$lib/types/charades';
 
 export class CharadesState {
 	private readonly teams = new Map<string, Team>();
@@ -69,5 +70,20 @@ export class CharadesState {
 
 	markMissed(teamId: Team['id'], word: string) {
 		this.teams.get(teamId)?.missed(word);
+	}
+
+	getState(): CharadesStateData {
+		return {
+			teams: Array.from(this.teams.values()).map((t) => ({
+				id: t.id,
+				name: t.name,
+				score: t.score,
+				words: t.words.map((w) => w.text),
+				currentWordIndex: t.currentWordIndex
+			})),
+			activeTeamId: this.activeTeamId,
+			timer: this._timer.state,
+			currentWord: this.getCurrentWord()?.text ?? null
+		};
 	}
 }

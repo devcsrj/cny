@@ -1,7 +1,11 @@
 import { GAME_MASTER } from '$lib/server/bus';
 import { CHARADES } from '$lib/server/charades';
 import type { CharadesGmCommand } from '$lib/types/charades';
-import { text, type RequestHandler } from '@sveltejs/kit';
+import { json, text, type RequestHandler } from '@sveltejs/kit';
+
+export const GET: RequestHandler = async () => {
+	return json(CHARADES.getState());
+};
 
 export const POST: RequestHandler = async ({ request }) => {
 	const c = CHARADES;
@@ -72,10 +76,12 @@ function sendDuration() {
 
 function sendCurrentWord() {
 	const currentWord = CHARADES.getCurrentWord();
-	if (currentWord) {
+	const team = CHARADES.getCurrentTeam();
+	if (currentWord && team) {
 		GAME_MASTER.emit('charades:command', {
 			type: 'SET_WORD',
-			word: currentWord.text
+			word: currentWord.text,
+			index: team.currentWordIndex
 		});
 	}
 }

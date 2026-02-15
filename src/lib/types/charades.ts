@@ -4,8 +4,28 @@ export interface CharadesSummary {
 	missedWords: string[];
 }
 
+export interface CharadesTeam {
+	id: string;
+	name: string;
+	score: number;
+	words: string[];
+	currentWordIndex: number;
+}
+
+export interface CharadesStateData {
+	teams: CharadesTeam[];
+	activeTeamId: string | null;
+	timer: {
+		totalDuration: number;
+		remainingTime: number;
+		isRunning: boolean;
+		serverTimestamp: number;
+	};
+	currentWord: string | null;
+}
+
 export type CharadesCommand =
-	| { type: 'SET_WORD'; word: string }
+	| { type: 'SET_WORD'; word: string; index?: number }
 	| {
 			type: 'SET_DURATION';
 			duration: number;
@@ -16,7 +36,8 @@ export type CharadesCommand =
 	| { type: 'START' }
 	| { type: 'PAUSE' }
 	| { type: 'RESET' }
-	| { type: 'FINISH'; summary?: Partial<CharadesSummary> };
+	| { type: 'FINISH'; summary?: Partial<CharadesSummary> }
+	| { type: 'SYNC_STATE'; state: CharadesStateData };
 
 export type CharadesGmCommand =
 	| { type: 'SET_DURATION'; seconds: number }

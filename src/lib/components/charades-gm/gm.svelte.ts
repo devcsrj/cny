@@ -1,108 +1,153 @@
 import { Charades } from '$lib/components/charades/index.js';
-
-export interface GMTeam {
-	id: string;
-	name: string;
-	score: number;
-	words: string[];
-}
+import type {
+	CharadesCommand,
+	CharadesGmCommand,
+	CharadesStateData,
+	CharadesTeam
+} from '$lib/types/charades';
 
 export class CharadesGM {
-	teams = $state<GMTeam[]>([]);
+	teams = $state<CharadesTeam[]>([]);
 	activeTeamId = $state<string | null>(null);
-	currentWordIndex = $state(0);
 	duration = $state(60);
 	game: Charades;
 
-	constructor(teams: GMTeam[], duration: number = 60) {
-		this.teams = teams;
-		this.duration = duration;
-		this.game = new Charades('', duration);
+	constructor() {
+		this.game = new Charades('', 60);
 	}
 
 	activeTeam = $derived(this.teams.find((t) => t.id === this.activeTeamId));
-	currentWordPool = $derived(this.activeTeam?.words || []);
-	nextWord = $derived(
-		this.currentWordPool[(this.currentWordIndex + 1) % this.currentWordPool.length]
-	);
+
+	nextWord = $derived.by(() => {
+		const team = this.activeTeam;
+		if (!team || team.words.length === 0) return '';
+		const nextIndex = (team.currentWordIndex + 1) % team.words.length;
+		return team.words[nextIndex];
+	});
+
+	// --- Incoming (Observer) Actions ---
+
+	applyCommand(command: CharadesCommand) {
+		if (command.type === 'SET_WORD') {
+			this.game.setWord(command.word);
+			const team = this.teams.find((t) => t.id === this.activeTeamId);
+			if (team && command.index !== undefined) {
+				team.currentWordIndex = command.index;
+			}
+		} else if (command.type === 'SET_DURATION') {
+			this.duration = command.duration / 1000;
+			this.game.sync(
+				command.duration,
+				command.remainingTime,
+				command.isRunning,
+				command.serverTimestamp
+			);
+		} else if (command.type === 'START') {
+			this.game.start();
+		} else if (command.type === 'PAUSE') {
+			this.game.pause();
+		} else if (command.type === 'RESET') {
+			this.game.reset();
+		} else if (command.type === 'FINISH') {
+			this.game.finish(command.summary);
+			if (command.summary?.score !== undefined) {
+				const team = this.teams.find((t) => t.id === this.activeTeamId);
+				if (team) team.score = command.summary.score;
+			}
+		} else if (command.type === 'SYNC_STATE') {
+			this.syncWithServer(command.state);
+		}
+	}
+
+	syncWithServer(state: CharadesStateData) {
+		this.teams = state.teams;
+		this.activeTeamId = state.activeTeamId;
+		if (state.currentWord) this.game.setWord(state.currentWord);
+
+		const t = state.timer;
+		this.duration = t.totalDuration / 1000;
+		this.game.sync(t.totalDuration, t.remainingTime, t.isRunning, t.serverTimestamp);
+	}
+
+	// --- Outgoing (GM) Controls ---
 
 	selectTeam(id: string) {
 		if (this.game.status === 'waiting') {
-			this.activeTeamId = id;
+			this.dispatch({ type: 'SELECT_TEAM', teamId: id });
 		}
 	}
 
 	setDuration(seconds: number) {
-		this.duration = seconds;
-		this.game.setDuration(seconds);
+		this.dispatch({ type: 'SET_DURATION', seconds });
 	}
 
 	setTeamWords(id: string, words: string[]) {
 		const team = this.teams.find((t) => t.id === id);
 		if (team) {
-			team.words = words;
+			this.dispatch({ type: 'UPDATE_TEAM', team: { id, name: team.name, words } });
 		}
 	}
 
 	setTeamName(id: string, name: string) {
 		const team = this.teams.find((t) => t.id === id);
 		if (team) {
-			team.name = name;
+			this.dispatch({ type: 'UPDATE_TEAM', team: { id, name, words: team.words } });
 		}
 	}
 
-	addTeam(name: string = 'New Team') {
-		const id = Math.random().toString(36).substring(2, 9);
-		this.teams.push({
-			id,
-			name,
-			score: 0,
-			words: []
-		});
+	addTeam() {
+		this.dispatch({ type: 'ADD_TEAM' });
 	}
 
 	deleteTeam(id: string) {
-		this.teams = this.teams.filter((t) => t.id !== id);
-		if (this.activeTeamId === id) {
-			this.activeTeamId = null;
-		}
+		this.dispatch({ type: 'DELETE_TEAM', team: { id } });
 	}
 
 	startRound() {
 		if (!this.activeTeamId) return;
-		this.currentWordIndex = 0;
-		this.game.setWord(this.currentWordPool[this.currentWordIndex]);
-		this.game.start();
+		this.dispatch({ type: 'START_TIMER' });
 	}
 
 	handleCorrect() {
-		const team = this.teams.find((t) => t.id === this.activeTeamId);
-		if (team) team.score++;
-		this.game.score++;
-		this.game.correctWords.push(this.game.word);
-		this.advanceWord();
+		if (!this.activeTeamId) return;
+		this.dispatch({
+			type: 'MARK_CORRECT',
+			team: { id: this.activeTeamId },
+			word: this.game.word
+		});
 	}
 
 	handleMiss() {
-		this.game.missedWords.push(this.game.word);
-		this.advanceWord();
-	}
-
-	private advanceWord() {
-		this.currentWordIndex = (this.currentWordIndex + 1) % this.currentWordPool.length;
-		this.game.setWord(this.currentWordPool[this.currentWordIndex]);
+		if (!this.activeTeamId) return;
+		this.dispatch({
+			type: 'MARK_MISSED',
+			team: { id: this.activeTeamId },
+			word: this.game.word
+		});
 	}
 
 	prepareNextRound() {
-		this.game.reset();
-		this.activeTeamId = null;
-		this.currentWordIndex = 0;
+		this.dispatch({ type: 'RESET_TIMER' });
 	}
 
 	resetGame() {
-		this.game.reset();
-		this.teams.forEach((t) => (t.score = 0));
-		this.activeTeamId = null;
-		this.currentWordIndex = 0;
+		this.dispatch({ type: 'RESET_TIMER' });
+		this.teams.forEach((t) => {
+			this.dispatch({ type: 'RESET_TEAM', team: { id: t.id } });
+		});
+	}
+
+	// --- Internal ---
+
+	private async dispatch(command: CharadesGmCommand) {
+		try {
+			await fetch('/___/charades', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(command)
+			});
+		} catch (e) {
+			console.error('Failed to dispatch command', command, e);
+		}
 	}
 }

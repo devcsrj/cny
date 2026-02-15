@@ -5,21 +5,21 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Pencil } from '@lucide/svelte';
-	import type { GMTeam } from './gm.svelte.js';
+	import type { CharadesTeam } from '$lib/types/charades';
 
 	let {
 		team,
 		onSave,
 		onDelete
 	}: {
-		team: GMTeam;
+		team: CharadesTeam;
 		onSave: (name: string, words: string[]) => void;
 		onDelete: () => void;
 	} = $props();
 
 	let open = $state(false);
-	let name = $state(team.name);
-	let wordsText = $state(team.words.join('\n'));
+	let name = $state('');
+	let wordsText = $state('');
 
 	function handleSave() {
 		const words = wordsText

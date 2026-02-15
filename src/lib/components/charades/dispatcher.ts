@@ -1,5 +1,5 @@
 import type { CharadesCommand } from '$lib/types/charades';
-import type { Charades } from './charades.svelte';
+import type { Charades } from './charades.svelte.js';
 
 /**
  * Maps incoming commands to the Charades game state methods.
