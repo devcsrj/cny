@@ -1,22 +1,29 @@
-import type { CharadesSummary } from '$lib/types/charades';
-
-export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
+import type { CharadesSummary, CharadesStatus } from '$lib/types/charades';
 
 export class Charades {
 	word = $state('');
 	status = $state<CharadesStatus>('waiting');
 	duration = $state(60);
-	timeLeft = $state(60);
 	score = $state(0);
 	correctWords = $state<string[]>([]);
 	missedWords = $state<string[]>([]);
 
+	private targetTimestamp = $state<number | null>(null);
 	private timerId: number | null = null;
+
+	timeLeft = $derived.by(() => {
+		if (this.status !== 'playing' || !this.targetTimestamp) {
+			return this._pausedTimeLeft;
+		}
+		return Math.max(0, (this.targetTimestamp - Date.now()) / 1000);
+	});
+
+	private _pausedTimeLeft = $state(60);
 
 	constructor(word: string = '', duration: number = 60) {
 		this.word = word;
 		this.duration = duration;
-		this.timeLeft = duration;
+		this._pausedTimeLeft = duration;
 	}
 
 	setWord(word: string) {
@@ -26,7 +33,7 @@ export class Charades {
 	setDuration(seconds: number) {
 		this.duration = seconds;
 		if (this.status === 'waiting') {
-			this.timeLeft = seconds;
+			this._pausedTimeLeft = seconds;
 		}
 	}
 
@@ -38,57 +45,59 @@ export class Charades {
 		status?: CharadesStatus
 	) {
 		this.duration = duration / 1000;
-		const latency = (Date.now() - serverTimestamp) / 1000;
-		const remaining = remainingTimeMs / 1000;
+		const latency = Date.now() - serverTimestamp;
+		const remaining = remainingTimeMs;
 
 		if (status) {
 			this.status = status;
-		} else {
-			// Fallback logic if status not provided
-			if (isRunning) {
-				this.status = 'playing';
-			} else if (remaining === 0) {
-				this.status = 'finished';
-			} else if (remaining < this.duration) {
-				this.status = 'paused';
-			} else {
-				this.status = 'waiting';
-			}
 		}
 
-		if (this.status === 'playing') {
-			this.timeLeft = Math.max(0, remaining - latency);
-			this.resumeTimer();
+		if (isRunning) {
+			this.targetTimestamp = Date.now() + remaining - latency;
+			this.status = 'playing';
 		} else {
-			this.timeLeft = remaining;
-			this.stopTimer();
+			this.targetTimestamp = null;
+			this._pausedTimeLeft = remaining / 1000;
 		}
 	}
 
-	start() {
-		if (this.status === 'playing') return;
+	resumeTimer() {
 		this.status = 'playing';
+		// On resume, we need a duration. If we don't have targetTimestamp, we use _pausedTimeLeft
+		if (!this.targetTimestamp) {
+			this.targetTimestamp = Date.now() + this._pausedTimeLeft * 1000;
+		}
+	}
+
+	stopTimer() {
+		if (this.status === 'playing') {
+			this._pausedTimeLeft = this.timeLeft;
+		}
+		this.status = 'paused';
+		this.targetTimestamp = null;
+	}
+
+	start() {
 		this.resumeTimer();
 	}
 
 	pause() {
-		this.status = 'paused';
 		this.stopTimer();
 	}
 
 	reset() {
-		this.stopTimer();
+		this.targetTimestamp = null;
 		this.status = 'waiting';
-		this.timeLeft = this.duration;
+		this._pausedTimeLeft = this.duration;
 		this.score = 0;
 		this.correctWords = [];
 		this.missedWords = [];
 	}
 
 	finish(summary?: Partial<CharadesSummary>) {
-		this.stopTimer();
+		this.targetTimestamp = null;
 		this.status = 'finished';
-		this.timeLeft = 0;
+		this._pausedTimeLeft = 0;
 		if (summary) {
 			if (summary.score !== undefined) this.score = summary.score;
 			if (summary.correctWords) this.correctWords = summary.correctWords;
@@ -96,25 +105,7 @@ export class Charades {
 		}
 	}
 
-	private resumeTimer() {
-		this.stopTimer();
-		this.timerId = window.setInterval(() => {
-			if (this.timeLeft > 0) {
-				this.timeLeft--;
-			} else {
-				this.finish();
-			}
-		}, 1000);
-	}
-
-	private stopTimer() {
-		if (this.timerId) {
-			clearInterval(this.timerId);
-			this.timerId = null;
-		}
-	}
-
 	destroy() {
-		this.stopTimer();
+		this.targetTimestamp = null;
 	}
 }

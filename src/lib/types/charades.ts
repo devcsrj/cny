@@ -15,6 +15,13 @@ export interface CharadesTeam {
 	currentWordIndex: number;
 }
 
+export interface CharadesTurn {
+	teamId: string;
+	correctWords: string[];
+	missedWords: string[];
+	score: number;
+}
+
 export interface CharadesStateData {
 	teams: CharadesTeam[];
 	activeTeamId: string | null;
@@ -26,8 +33,7 @@ export interface CharadesStateData {
 		serverTimestamp: number;
 	};
 	currentWord: string | null;
-	roundCorrect: string[];
-	roundMissed: string[];
+	activeTurn: CharadesTurn | null;
 }
 
 export type CharadesCommand =

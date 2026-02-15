@@ -75,8 +75,13 @@ export class CharadesGM {
 		this.activeTeamId = state.activeTeamId;
 		if (state.currentWord) this.game.setWord(state.currentWord);
 
-		this.game.correctWords = state.roundCorrect;
-		this.game.missedWords = state.roundMissed;
+		if (state.activeTurn) {
+			this.game.correctWords = state.activeTurn.correctWords;
+			this.game.missedWords = state.activeTurn.missedWords;
+		} else {
+			this.game.correctWords = [];
+			this.game.missedWords = [];
+		}
 
 		const t = state.timer;
 		this.duration = t.totalDuration / 1000;

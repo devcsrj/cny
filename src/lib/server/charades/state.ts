@@ -1,14 +1,14 @@
 import { Timer } from '../timer';
 import { Team } from './team';
 import { Word } from './word';
+import { Turn } from './turn';
 import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
 
 export class CharadesState {
 	private readonly teams = new Map<string, Team>();
 	private activeTeamId: string | null = null;
 	private _status: CharadesStatus = 'waiting';
-	private roundCorrect: string[] = [];
-	private roundMissed: string[] = [];
+	private activeTurn: Turn | null = null;
 
 	private readonly _timer: Timer;
 
@@ -28,9 +28,8 @@ export class CharadesState {
 	}
 
 	startTimer() {
-		if (this._status === 'waiting') {
-			this.roundCorrect = [];
-			this.roundMissed = [];
+		if (this._status === 'waiting' && this.activeTeamId) {
+			this.activeTurn = new Turn(this.activeTeamId);
 		}
 		this._timer.start();
 		this._status = 'playing';
@@ -44,8 +43,7 @@ export class CharadesState {
 	resetTimer(durationMs?: number) {
 		this._timer.reset(durationMs);
 		this._status = 'waiting';
-		this.roundCorrect = [];
-		this.roundMissed = [];
+		this.activeTurn = null;
 	}
 
 	setCurrentTeam(id: Team['id']) {
@@ -61,8 +59,7 @@ export class CharadesState {
 	resetTeam(id: Team['id']) {
 		this.teams.get(id)?.reset();
 		if (this.activeTeamId === id) {
-			this.roundCorrect = [];
-			this.roundMissed = [];
+			this.activeTurn = null;
 		}
 	}
 
@@ -86,7 +83,7 @@ export class CharadesState {
 
 		if (opts.name) team.name = opts.name;
 		if (opts.words) {
-			team.words = opts.words.map((word) => new Word(word));
+			team.words = opts.words;
 		}
 	}
 
@@ -94,19 +91,18 @@ export class CharadesState {
 		this.teams.delete(id);
 		if (this.activeTeamId === id) {
 			this.activeTeamId = null;
-			this.roundCorrect = [];
-			this.roundMissed = [];
+			this.activeTurn = null;
 		}
 	}
 
 	markCorrect(teamId: Team['id'], word: string) {
 		this.teams.get(teamId)?.guessed(word);
-		this.roundCorrect.push(word);
+		this.activeTurn?.recordCorrect(word);
 	}
 
 	markMissed(teamId: Team['id'], word: string) {
 		this.teams.get(teamId)?.missed(word);
-		this.roundMissed.push(word);
+		this.activeTurn?.recordMissed(word);
 	}
 
 	getState(): CharadesStateData {
@@ -115,7 +111,7 @@ export class CharadesState {
 				id: t.id,
 				name: t.name,
 				score: t.score,
-				words: t.words.map((w) => w.text),
+				words: t.words,
 				guessedWords: t.guessedWords,
 				currentWordIndex: t.currentWordIndex
 			})),
@@ -123,8 +119,7 @@ export class CharadesState {
 			status: this._status,
 			timer: this._timer.state,
 			currentWord: this.getCurrentWord()?.text ?? null,
-			roundCorrect: [...this.roundCorrect],
-			roundMissed: [...this.roundMissed]
+			activeTurn: this.activeTurn?.getData() ?? null
 		};
 	}
 }
