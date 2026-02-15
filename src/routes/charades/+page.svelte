@@ -11,14 +11,7 @@
 			try {
 				const res = await fetch('/___/charades');
 				const state = await res.json();
-				// We can use the dispatch tool or just sync directly
-				game.sync(
-					state.timer.totalDuration,
-					state.timer.remainingTime,
-					state.timer.isRunning,
-					state.timer.serverTimestamp
-				);
-				if (state.currentWord) game.setWord(state.currentWord);
+				game.update(state);
 			} catch (e) {
 				console.error('Failed to load initial state', e);
 			}

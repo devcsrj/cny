@@ -97,5 +97,11 @@ function sendCurrentWord() {
 			word: currentWord.text,
 			index: team.currentWordIndex
 		});
+	} else {
+		GAME_MASTER.emit('charades:command', {
+			type: 'SET_WORD',
+			word: '',
+			index: -1
+		});
 	}
 }

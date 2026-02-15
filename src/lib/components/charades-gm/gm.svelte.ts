@@ -38,6 +38,11 @@ export class CharadesGM {
 	// --- Incoming (Observer) Actions ---
 
 	applyCommand(command: CharadesCommand) {
+		if (command.type === 'SYNC_STATE') {
+			this.syncWithServer(command.state);
+			return;
+		}
+
 		if (command.type === 'SET_WORD') {
 			this.game.setWord(command.word);
 			const team = this.teams.find((t) => t.id === this.activeTeamId);
@@ -54,9 +59,9 @@ export class CharadesGM {
 				command.status
 			);
 		} else if (command.type === 'START') {
-			this.game.start();
+			this.game.status = 'playing';
 		} else if (command.type === 'PAUSE') {
-			this.game.pause();
+			this.game.status = 'paused';
 		} else if (command.type === 'RESET') {
 			this.game.reset();
 		} else if (command.type === 'FINISH') {
@@ -65,27 +70,14 @@ export class CharadesGM {
 				const team = this.teams.find((t) => t.id === this.activeTeamId);
 				if (team) team.score = command.summary.score;
 			}
-		} else if (command.type === 'SYNC_STATE') {
-			this.syncWithServer(command.state);
 		}
 	}
 
 	syncWithServer(state: CharadesStateData) {
+		this.game.update(state);
 		this.teams = state.teams;
 		this.activeTeamId = state.activeTeamId;
-		if (state.currentWord) this.game.setWord(state.currentWord);
-
-		if (state.activeTurn) {
-			this.game.correctWords = state.activeTurn.correctWords;
-			this.game.missedWords = state.activeTurn.missedWords;
-		} else {
-			this.game.correctWords = [];
-			this.game.missedWords = [];
-		}
-
-		const t = state.timer;
-		this.duration = t.totalDuration / 1000;
-		this.game.sync(t.totalDuration, t.remainingTime, t.isRunning, t.serverTimestamp, state.status);
+		this.duration = state.timer.totalDuration / 1000;
 	}
 
 	// --- Outgoing (GM) Controls ---
@@ -128,7 +120,7 @@ export class CharadesGM {
 	}
 
 	handleCorrect() {
-		if (!this.activeTeamId) return;
+		if (!this.activeTeamId || !this.game.word) return;
 		this.dispatch({
 			type: 'MARK_CORRECT',
 			team: { id: this.activeTeamId },
@@ -137,7 +129,7 @@ export class CharadesGM {
 	}
 
 	handleMiss() {
-		if (!this.activeTeamId) return;
+		if (!this.activeTeamId || !this.game.word) return;
 		this.dispatch({
 			type: 'MARK_MISSED',
 			team: { id: this.activeTeamId },

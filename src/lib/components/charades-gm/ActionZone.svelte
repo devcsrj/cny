@@ -4,6 +4,7 @@
 
 	let {
 		status = 'waiting',
+		canAction = true,
 		onCorrect,
 		onPass,
 		onPause,
@@ -11,6 +12,7 @@
 		onNext
 	}: {
 		status: string;
+		canAction?: boolean;
 		onCorrect: () => void;
 		onPass: () => void;
 		onPause: () => void;
@@ -24,6 +26,7 @@
 		<Button
 			variant="destructive"
 			size="lg"
+			disabled={!canAction}
 			class="col-span-1 flex h-20 flex-col gap-1 rounded-2xl"
 			onclick={onPass}
 			aria-label="Pass"
@@ -44,6 +47,7 @@
 		<Button
 			variant="default"
 			size="lg"
+			disabled={!canAction}
 			class="col-span-2 h-20 rounded-2xl bg-green-600 text-xl font-bold text-white hover:bg-green-700"
 			onclick={onCorrect}
 			aria-label="Correct"

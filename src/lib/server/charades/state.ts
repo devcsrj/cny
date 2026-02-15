@@ -96,11 +96,17 @@ export class CharadesState {
 	}
 
 	markCorrect(teamId: Team['id'], word: string) {
+		const current = this.getCurrentWord();
+		if (!current || current.text !== word) return;
+
 		this.teams.get(teamId)?.guessed(word);
 		this.activeTurn?.recordCorrect(word);
 	}
 
 	markMissed(teamId: Team['id'], word: string) {
+		const current = this.getCurrentWord();
+		if (!current || current.text !== word) return;
+
 		this.teams.get(teamId)?.missed(word);
 		this.activeTurn?.recordMissed(word);
 	}

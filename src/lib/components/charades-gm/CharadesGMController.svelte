@@ -54,6 +54,7 @@
 		<div class="mt-auto">
 			<ActionZone
 				status={gm.game.status}
+				canAction={!!gm.game.word}
 				onCorrect={() => gm.handleCorrect()}
 				onPass={() => gm.handleMiss()}
 				onPause={() => gm.game.pause()}

@@ -14,11 +14,15 @@ export class Turn {
 	}
 
 	recordCorrect(word: string) {
-		this.correctWords.push(word);
+		if (!this.correctWords.includes(word) && !this.missedWords.includes(word)) {
+			this.correctWords.push(word);
+		}
 	}
 
 	recordMissed(word: string) {
-		this.missedWords.push(word);
+		if (!this.correctWords.includes(word) && !this.missedWords.includes(word)) {
+			this.missedWords.push(word);
+		}
 	}
 
 	getData(): CharadesTurn {

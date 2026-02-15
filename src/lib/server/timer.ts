@@ -65,9 +65,15 @@ export class Timer {
 
 	// 4. Get the state to broadcast via SSE
 	get state() {
+		let currentRemaining = this.remainingTime;
+		if (this.isRunning && this.lastUpdated) {
+			const elapsed = Date.now() - this.lastUpdated;
+			currentRemaining = Math.max(0, this.remainingTime - elapsed);
+		}
+
 		return {
 			totalDuration: this.totalDuration,
-			remainingTime: this.remainingTime,
+			remainingTime: currentRemaining,
 			isRunning: this.isRunning,
 			serverTimestamp: Date.now() // Crucial for client-side sync
 		};

@@ -8,6 +8,9 @@ import type { Charades } from './charades.svelte.js';
  */
 export function dispatch(game: Charades, command: CharadesCommand) {
 	switch (command.type) {
+		case 'SYNC_STATE':
+			game.update(command.state);
+			break;
 		case 'SET_WORD':
 			game.setWord(command.word);
 			break;
