@@ -20,11 +20,11 @@ export type CharadesCommand =
 
 export type CharadesGmCommand =
 	| { type: 'SET_DURATION'; seconds: number }
-	| { type: 'SELECT_TEAM'; teamId: string }
 	| { type: 'START_TIMER' }
 	| { type: 'PAUSE_TIMER' }
 	| { type: 'RESET_TIMER' }
 	| { type: 'ADD_TEAM' }
+	| { type: 'SELECT_TEAM'; teamId: string }
 	| { type: 'UPDATE_TEAM'; team: { id: string; name: string; words: string[] } }
 	| { type: 'DELETE_TEAM'; team: { id: string } }
 	| { type: 'RESET_TEAM'; team: { id: string } }

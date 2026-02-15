@@ -3,8 +3,8 @@ import { Team } from './team';
 import { Word } from './word';
 
 export class CharadesState {
-	private readonly teams: Team[] = [];
-	private currentTeamIndex = 0;
+	private readonly teams = new Map<string, Team>();
+	private activeTeamId: string | null = null;
 
 	private readonly _timer: Timer;
 
@@ -19,78 +19,55 @@ export class CharadesState {
 	}
 
 	setCurrentTeam(id: Team['id']) {
-		const index = this.teams.findIndex((team) => team.id === id);
-		if (index !== -1) {
-			this.currentTeamIndex = index;
+		if (this.teams.has(id)) {
+			this.activeTeamId = id;
 		}
 	}
 
-	getCurrentTeam(): Team {
-		return this.teams[this.currentTeamIndex];
+	getCurrentTeam(): Team | undefined {
+		return this.activeTeamId ? this.teams.get(this.activeTeamId) : undefined;
 	}
 
 	resetTeam(id: Team['id']) {
-		const team = this.teams.find((team) => team.id === id);
-		if (team) {
-			team.reset();
-		}
+		this.teams.get(id)?.reset();
 	}
 
 	nextWord() {
-		this.getCurrentTeam().nextWord();
+		this.getCurrentTeam()?.nextWord();
 	}
 
 	getCurrentWord(): Word | null {
-		return this.getCurrentTeam().currentWord;
+		return this.getCurrentTeam()?.currentWord ?? null;
 	}
 
 	addTeam(): Team {
 		const team = new Team();
-		this.teams.push(team);
+		this.teams.set(team.id, team);
 		return team;
 	}
 
 	updateTeam(id: Team['id'], opts: { name?: string; words?: string[] }) {
-		const { name, words } = opts;
-		for (const team of this.teams) {
-			if (team.id !== id) {
-				continue;
-			}
+		const team = this.teams.get(id);
+		if (!team) return;
 
-			if (name) {
-				team.name = name;
-			}
-
-			if (words) {
-				team.words = words.map((word) => new Word(word));
-			}
+		if (opts.name) team.name = opts.name;
+		if (opts.words) {
+			team.words = opts.words.map((word) => new Word(word));
 		}
 	}
 
 	deleteTeam(id: Team['id']) {
-		for (let i = 0; i < this.teams.length; i++) {
-			if (this.teams[i].id === id) {
-				this.teams.splice(i, 1);
-				break;
-			}
+		this.teams.delete(id);
+		if (this.activeTeamId === id) {
+			this.activeTeamId = null;
 		}
 	}
 
 	markCorrect(teamId: Team['id'], word: string) {
-		for (const team of this.teams) {
-			if (team.id !== teamId) {
-				continue;
-			}
-			team.guessed(word);
-		}
+		this.teams.get(teamId)?.guessed(word);
 	}
 
 	markMissed(teamId: Team['id'], word: string) {
-		for (const team of this.teams) {
-			if (team.id !== teamId) {
-				continue;
-			}
-			team.missed(word);
-		}
+		this.teams.get(teamId)?.missed(word);
 	}
 }

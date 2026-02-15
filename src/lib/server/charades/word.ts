@@ -1,40 +1,22 @@
 export class Word {
-	private _text: string;
-	private _guessed = false;
-
-	constructor(text: string) {
-		this._text = text;
-	}
-
-	static same(l: Word, r: Word): boolean {
-		return l.text === r.text;
-	}
-
-	get text() {
-		return this._text;
-	}
-
-	set text(value: string) {
-		this._text = value;
-	}
-
-	get wasGuessed() {
-		return this._guessed;
-	}
+	constructor(
+		public text: string,
+		public wasGuessed: boolean = false
+	) {}
 
 	is(text: string) {
-		return this._text === text;
+		return this.text === text;
 	}
 
 	guessed() {
-		this._guessed = true;
+		this.wasGuessed = true;
 	}
 
 	missed() {
-		this._guessed = false;
+		this.wasGuessed = false;
 	}
 
 	reset() {
-		this._guessed = false;
+		this.wasGuessed = false;
 	}
 }

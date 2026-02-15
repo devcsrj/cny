@@ -3,76 +3,40 @@ import { Word } from './word';
 import type { CharadesSummary } from '$lib/types/charades';
 
 export class Team {
-	private _id: string;
-	private _name: string;
-	private _words: Word[] = [];
-	private _currentWordIndex = 0;
-
-	constructor() {
-		this._id = nanoid();
-		this._name = 'New Team';
-	}
-
-	set name(value: string) {
-		this._name = value;
-	}
-
-	get id(): string {
-		return this._id;
-	}
-
-	get name(): string {
-		return this._name;
-	}
+	public id = nanoid();
+	public name = 'New Team';
+	public words: Word[] = [];
+	private currentWordIndex = 0;
 
 	nextWord() {
-		this._currentWordIndex = (this._currentWordIndex + 1) % this._words.length;
+		if (this.words.length === 0) return;
+		this.currentWordIndex = (this.currentWordIndex + 1) % this.words.length;
 	}
 
 	get currentWord(): Word | null {
-		return this._words[this._currentWordIndex];
-	}
-
-	set words(words: Word[]) {
-		this._words = words;
-	}
-
-	get words(): Word[] {
-		return this._words;
+		return this.words[this.currentWordIndex] ?? null;
 	}
 
 	get score(): number {
-		return this._words.filter((word) => word.wasGuessed).length;
+		return this.words.filter((w) => w.wasGuessed).length;
 	}
 
 	get summary(): CharadesSummary {
-		return {
-			score: this.score,
-			correctWords: this._words.filter((word) => word.wasGuessed).map((word) => word.text),
-			missedWords: this._words.filter((word) => !word.wasGuessed).map((word) => word.text)
-		};
+		const correct = this.words.filter((w) => w.wasGuessed).map((w) => w.text);
+		const missed = this.words.filter((w) => !w.wasGuessed).map((w) => w.text);
+		return { score: correct.length, correctWords: correct, missedWords: missed };
 	}
 
 	guessed(text: string) {
-		for (const word of this._words) {
-			if (word.is(text)) {
-				word.guessed();
-				break;
-			}
-		}
+		this.words.find((w) => w.is(text))?.guessed();
 	}
 
 	missed(text: string) {
-		for (const word of this._words) {
-			if (word.is(text)) {
-				word.missed();
-				break;
-			}
-		}
+		this.words.find((w) => w.is(text))?.missed();
 	}
 
 	reset() {
-		this._words.forEach((word) => word.reset());
-		this._currentWordIndex = 0;
+		this.words.forEach((w) => w.reset());
+		this.currentWordIndex = 0;
 	}
 }

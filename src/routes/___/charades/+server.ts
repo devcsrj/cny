@@ -5,43 +5,55 @@ import { text, type RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const c = CHARADES;
-
 	const body = (await request.json()) as CharadesGmCommand;
-	if (body.type === 'SET_DURATION') {
-		c.timer.reset(body.seconds * 1000);
-		sendDuration();
-	} else if (body.type === 'SELECT_TEAM') {
-		c.setCurrentTeam(body.teamId);
-	} else if (body.type === 'START_TIMER') {
-		c.timer.start();
-		sendDuration();
-		sendCurrentWord();
-	} else if (body.type === 'PAUSE_TIMER') {
-		c.timer.pause();
-		sendDuration();
-	} else if (body.type === 'RESET_TIMER') {
-		c.timer.reset();
-		sendDuration();
-		GAME_MASTER.emit('charades:command', { type: 'RESET' });
-	} else if (body.type === 'ADD_TEAM') {
-		c.addTeam();
-	} else if (body.type === 'UPDATE_TEAM') {
-		c.updateTeam(body.team.id, {
-			name: body.team.name,
-			words: body.team.words
-		});
-	} else if (body.type === 'DELETE_TEAM') {
-		c.deleteTeam(body.team.id);
-	} else if (body.type === 'RESET_TEAM') {
-		c.resetTeam(body.team.id);
-	} else if (body.type === 'MARK_CORRECT') {
-		c.markCorrect(body.team.id, body.word);
-		c.nextWord();
-		sendCurrentWord();
-	} else if (body.type === 'MARK_MISSED') {
-		c.markMissed(body.team.id, body.word);
-		c.nextWord();
-		sendCurrentWord();
+
+	switch (body.type) {
+		case 'SET_DURATION':
+			c.timer.reset(body.seconds * 1000);
+			sendDuration();
+			break;
+		case 'SELECT_TEAM':
+			c.setCurrentTeam(body.teamId);
+			break;
+		case 'START_TIMER':
+			c.timer.start();
+			sendDuration();
+			sendCurrentWord();
+			break;
+		case 'PAUSE_TIMER':
+			c.timer.pause();
+			sendDuration();
+			break;
+		case 'RESET_TIMER':
+			c.timer.reset();
+			sendDuration();
+			GAME_MASTER.emit('charades:command', { type: 'RESET' });
+			break;
+		case 'ADD_TEAM':
+			c.addTeam();
+			break;
+		case 'UPDATE_TEAM':
+			c.updateTeam(body.team.id, {
+				name: body.team.name,
+				words: body.team.words
+			});
+			break;
+		case 'DELETE_TEAM':
+			c.deleteTeam(body.team.id);
+			break;
+		case 'RESET_TEAM':
+			c.resetTeam(body.team.id);
+			break;
+		case 'MARK_CORRECT':
+			c.markCorrect(body.team.id, body.word);
+			c.nextWord();
+			sendCurrentWord();
+			break;
+		case 'MARK_MISSED':
+			c.markMissed(body.team.id, body.word);
+			c.nextWord();
+			sendCurrentWord();
+			break;
 	}
 
 	return text('OK');
