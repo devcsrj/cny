@@ -21,8 +21,18 @@ export class CharadesGM {
 	nextWord = $derived.by(() => {
 		const team = this.activeTeam;
 		if (!team || team.words.length === 0) return '';
-		const nextIndex = (team.currentWordIndex + 1) % team.words.length;
-		return team.words[nextIndex];
+
+		const start = team.currentWordIndex;
+		let next = (team.currentWordIndex + 1) % team.words.length;
+
+		// Find next word that wasn't guessed (client side prediction/sync)
+		while (team.guessedWords.includes(team.words[next]) && next !== start) {
+			next = (next + 1) % team.words.length;
+		}
+
+		if (team.guessedWords.includes(team.words[next])) return ''; // Pool exhausted
+
+		return team.words[next];
 	});
 
 	// --- Incoming (Observer) Actions ---
@@ -64,6 +74,9 @@ export class CharadesGM {
 		this.teams = state.teams;
 		this.activeTeamId = state.activeTeamId;
 		if (state.currentWord) this.game.setWord(state.currentWord);
+
+		this.game.correctWords = state.roundCorrect;
+		this.game.missedWords = state.roundMissed;
 
 		const t = state.timer;
 		this.duration = t.totalDuration / 1000;

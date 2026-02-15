@@ -33,7 +33,13 @@
 		disabled={gm.game.status !== 'waiting'}
 	/>
 
-	<GameStage status={gm.game.status} word={gm.game.word} nextWord={gm.nextWord} />
+	<GameStage
+		status={gm.game.status}
+		word={gm.game.word}
+		nextWord={gm.nextWord}
+		correctWords={gm.game.correctWords}
+		missedWords={gm.game.missedWords}
+	/>
 
 	{#if gm.game.status === 'waiting'}
 		<div class="mt-auto">

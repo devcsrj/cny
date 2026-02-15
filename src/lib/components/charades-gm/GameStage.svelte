@@ -4,11 +4,15 @@
 	let {
 		word = '',
 		nextWord = '',
-		status = 'waiting'
+		status = 'waiting',
+		correctWords = [],
+		missedWords = []
 	}: {
 		word: string;
 		nextWord?: string;
 		status: string;
+		correctWords?: string[];
+		missedWords?: string[];
 	} = $props();
 </script>
 
@@ -31,6 +35,25 @@
 				<p class="text-sm font-semibold text-muted-foreground/80">
 					{nextWord}
 				</p>
+			</div>
+		{/if}
+
+		{#if correctWords.length > 0 || missedWords.length > 0}
+			<div class="mt-4 flex w-full flex-wrap justify-center gap-1.5 overflow-hidden px-2">
+				{#each correctWords as w, i (i)}
+					<div
+						class="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-600 ring-1 ring-green-500/20 ring-inset"
+					>
+						{w}
+					</div>
+				{/each}
+				{#each missedWords as w, i (i)}
+					<div
+						class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground ring-1 ring-foreground/5 ring-inset"
+					>
+						{w}
+					</div>
+				{/each}
 			</div>
 		{/if}
 	{:else if status === 'waiting'}
