@@ -1,11 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { CharadesGame, Charades } from '$lib/components/charades/index.js';
+	import { CharadesGame, Charades, dispatch } from '$lib/components/charades/index.js';
+	import type { CharadesCommand } from '$lib/types/charades';
 
-	const game = new Charades('Diving with goggles', 60);
+	const game = new Charades('', 60);
 
 	onMount(() => {
-		game.start();
+		const path = `/api/bookings/subscribe`;
+		const es = new EventSource(path);
+		es.addEventListener('message', async (e) => {
+			const payload = JSON.parse(e.data) as CharadesCommand;
+			dispatch(game, payload);
+		});
+
+		return () => {
+			es.close();
+		};
 	});
 </script>
 

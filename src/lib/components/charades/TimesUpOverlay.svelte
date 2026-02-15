@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { Charades } from './charades';
+	import type { Charades } from './charades.svelte';
+
 	let { game }: { game: Charades } = $props();
 </script>
 

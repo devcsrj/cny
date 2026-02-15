@@ -1,12 +1,5 @@
-import type { Charades, CharadesSummary } from './charades';
-
-export type CharadesCommand =
-	| { type: 'SET_WORD'; word: string }
-	| { type: 'SET_DURATION'; seconds: number }
-	| { type: 'START' }
-	| { type: 'PAUSE' }
-	| { type: 'RESET' }
-	| { type: 'FINISH'; summary?: Partial<CharadesSummary> };
+import type { CharadesCommand } from '$lib/types/charades';
+import type { Charades } from './charades.svelte';
 
 /**
  * Maps incoming commands to the Charades game state methods.

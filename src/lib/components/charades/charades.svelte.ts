@@ -1,10 +1,6 @@
-export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
+import type { CharadesSummary } from '$lib/types/charades';
 
-export interface CharadesSummary {
-	score: number;
-	correctWords: string[];
-	missedWords: string[];
-}
+export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
 
 export class Charades {
 	word = $state('');
