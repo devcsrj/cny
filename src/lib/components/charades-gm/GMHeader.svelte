@@ -1,0 +1,42 @@
+<script lang="ts">
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { RotateCcw } from '@lucide/svelte';
+	import type { CharadesStatus } from '$lib/components/charades/charades.svelte';
+
+	let {
+		status = 'waiting',
+		timeLeft = 60,
+		onReset
+	}: {
+		status: CharadesStatus;
+		timeLeft: number;
+		onReset: () => void;
+	} = $props();
+
+	const statusColor = {
+		waiting: 'secondary',
+		playing: 'default',
+		paused: 'outline',
+		finished: 'destructive'
+	} as const;
+</script>
+
+<header class="flex items-center justify-between border-b p-4">
+	<div class="flex items-center gap-2">
+		<Badge variant={statusColor[status]} class="capitalize">
+			{status}
+		</Badge>
+	</div>
+
+	<div
+		class="text-3xl font-bold tabular-nums"
+		class:text-destructive={timeLeft <= 10 && status === 'playing'}
+	>
+		{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+	</div>
+
+	<Button variant="ghost" size="icon" onclick={onReset} aria-label="Reset Game">
+		<RotateCcw class="h-5 w-5" />
+	</Button>
+</header>
