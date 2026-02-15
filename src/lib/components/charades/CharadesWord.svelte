@@ -1,5 +1,6 @@
 <script lang="ts">
-	let { word }: { word: string } = $props();
+	import type { Charades } from './charades';
+	let { game }: { game: Charades } = $props();
 </script>
 
 <div
@@ -8,6 +9,6 @@
 	<h1
 		class="text-center text-6xl font-black tracking-tighter text-white uppercase md:text-8xl lg:text-9xl"
 	>
-		{word}
+		{game.word}
 	</h1>
 </div>

@@ -1,5 +1,12 @@
 <script lang="ts">
-	import CharadesGame from '$lib/components/charades/CharadesGame.svelte';
+	import { onMount } from 'svelte';
+	import { CharadesGame, Charades } from '$lib/components/charades/index.js';
+
+	const game = new Charades('Diving with goggles', 60);
+
+	onMount(() => {
+		game.start();
+	});
 </script>
 
-<CharadesGame word="Diving with goggles" duration={60} />
+<CharadesGame {game} />
