@@ -33,7 +33,10 @@
 		class="text-3xl font-bold tabular-nums"
 		class:text-destructive={timeLeft <= 10 && status === 'playing'}
 	>
-		{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+		{#if true}
+			{@const displayTime = Math.ceil(timeLeft)}
+			{Math.floor(displayTime / 60)}:{(displayTime % 60).toString().padStart(2, '0')}
+		{/if}
 	</div>
 
 	<Button variant="ghost" size="icon" onclick={onReset} aria-label="Reset Game">

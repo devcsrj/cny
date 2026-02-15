@@ -9,13 +9,14 @@ export class Charades {
 	missedWords = $state<string[]>([]);
 
 	private targetTimestamp = $state<number | null>(null);
-	private timerId: number | null = null;
+	private _now = $state(Date.now());
+	private tickerId: ReturnType<typeof setInterval> | null = null;
 
 	timeLeft = $derived.by(() => {
 		if (this.status !== 'playing' || !this.targetTimestamp) {
 			return this._pausedTimeLeft;
 		}
-		return Math.max(0, (this.targetTimestamp - Date.now()) / 1000);
+		return Math.max(0, (this.targetTimestamp - this._now) / 1000);
 	});
 
 	private _pausedTimeLeft = $state(60);
@@ -55,18 +56,39 @@ export class Charades {
 		if (isRunning) {
 			this.targetTimestamp = Date.now() + remaining - latency;
 			this.status = 'playing';
+			this.startTicker();
 		} else {
+			this.stopTicker();
 			this.targetTimestamp = null;
 			this._pausedTimeLeft = remaining / 1000;
 		}
 	}
 
+	private startTicker() {
+		if (typeof window === 'undefined') return;
+		if (this.tickerId) return;
+		this._now = Date.now();
+		this.tickerId = setInterval(() => {
+			this._now = Date.now();
+			if (this.timeLeft <= 0 && this.status === 'playing') {
+				this.stopTicker();
+			}
+		}, 100);
+	}
+
+	private stopTicker() {
+		if (this.tickerId) {
+			clearInterval(this.tickerId);
+			this.tickerId = null;
+		}
+	}
+
 	resumeTimer() {
 		this.status = 'playing';
-		// On resume, we need a duration. If we don't have targetTimestamp, we use _pausedTimeLeft
 		if (!this.targetTimestamp) {
 			this.targetTimestamp = Date.now() + this._pausedTimeLeft * 1000;
 		}
+		this.startTicker();
 	}
 
 	stopTimer() {
@@ -75,6 +97,7 @@ export class Charades {
 		}
 		this.status = 'paused';
 		this.targetTimestamp = null;
+		this.stopTicker();
 	}
 
 	start() {
@@ -86,6 +109,7 @@ export class Charades {
 	}
 
 	reset() {
+		this.stopTicker();
 		this.targetTimestamp = null;
 		this.status = 'waiting';
 		this._pausedTimeLeft = this.duration;
@@ -95,6 +119,7 @@ export class Charades {
 	}
 
 	finish(summary?: Partial<CharadesSummary>) {
+		this.stopTicker();
 		this.targetTimestamp = null;
 		this.status = 'finished';
 		this._pausedTimeLeft = 0;
@@ -106,6 +131,7 @@ export class Charades {
 	}
 
 	destroy() {
+		this.stopTicker();
 		this.targetTimestamp = null;
 	}
 }
