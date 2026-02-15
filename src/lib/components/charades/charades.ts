@@ -1,11 +1,19 @@
 export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
 
+export interface CharadesSummary {
+	score: number;
+	correctWords: string[];
+	missedWords: string[];
+}
+
 export class Charades {
 	word = $state('');
 	status = $state<CharadesStatus>('waiting');
 	duration = $state(60);
 	timeLeft = $state(60);
 	score = $state(0);
+	correctWords = $state<string[]>([]);
+	missedWords = $state<string[]>([]);
 
 	private timerId: number | null = null;
 
@@ -42,14 +50,18 @@ export class Charades {
 		this.status = 'waiting';
 		this.timeLeft = this.duration;
 		this.score = 0;
+		this.correctWords = [];
+		this.missedWords = [];
 	}
 
-	finish(score?: number) {
+	finish(summary?: Partial<CharadesSummary>) {
 		this.stopTimer();
 		this.status = 'finished';
 		this.timeLeft = 0;
-		if (score !== undefined) {
-			this.score = score;
+		if (summary) {
+			if (summary.score !== undefined) this.score = summary.score;
+			if (summary.correctWords) this.correctWords = summary.correctWords;
+			if (summary.missedWords) this.missedWords = summary.missedWords;
 		}
 	}
 

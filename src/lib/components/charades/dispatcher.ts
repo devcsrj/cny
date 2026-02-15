@@ -1,4 +1,4 @@
-import type { Charades } from './charades';
+import type { Charades, CharadesSummary } from './charades';
 
 export type CharadesCommand =
 	| { type: 'SET_WORD'; word: string }
@@ -6,7 +6,7 @@ export type CharadesCommand =
 	| { type: 'START' }
 	| { type: 'PAUSE' }
 	| { type: 'RESET' }
-	| { type: 'FINISH'; score?: number };
+	| { type: 'FINISH'; summary?: Partial<CharadesSummary> };
 
 /**
  * Maps incoming commands to the Charades game state methods.
@@ -31,7 +31,7 @@ export function dispatch(game: Charades, command: CharadesCommand) {
 			game.reset();
 			break;
 		case 'FINISH':
-			game.finish(command.score);
+			game.finish(command.summary);
 			break;
 	}
 }
