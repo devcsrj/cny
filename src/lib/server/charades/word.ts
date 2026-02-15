@@ -33,4 +33,8 @@ export class Word {
 	missed() {
 		this._guessed = false;
 	}
+
+	reset() {
+		this._guessed = false;
+	}
 }

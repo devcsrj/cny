@@ -6,6 +6,7 @@ export class Team {
 	private _id: string;
 	private _name: string;
 	private _words: Word[] = [];
+	private _currentWordIndex = 0;
 
 	constructor() {
 		this._id = nanoid();
@@ -22,6 +23,14 @@ export class Team {
 
 	get name(): string {
 		return this._name;
+	}
+
+	nextWord() {
+		this._currentWordIndex = (this._currentWordIndex + 1) % this._words.length;
+	}
+
+	get currentWord(): Word | null {
+		return this._words[this._currentWordIndex];
 	}
 
 	set words(words: Word[]) {
@@ -60,5 +69,10 @@ export class Team {
 				break;
 			}
 		}
+	}
+
+	reset() {
+		this._words.forEach((word) => word.reset());
+		this._currentWordIndex = 0;
 	}
 }

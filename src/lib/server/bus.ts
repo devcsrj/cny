@@ -5,7 +5,7 @@ interface EventMap {
 	'charades:command': (cmd: CharadesCommand) => void;
 }
 
-class TypedEventBus {
+export class TypedEventBus {
 	private emitter: EventEmitter = new EventEmitter();
 
 	on<K extends keyof EventMap>(eventName: K, listener: EventMap[K]): void {

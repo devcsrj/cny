@@ -1,8 +1,48 @@
+import { Timer } from '../timer';
 import { Team } from './team';
 import { Word } from './word';
 
 export class CharadesState {
 	private readonly teams: Team[] = [];
+	private currentTeamIndex = 0;
+
+	private readonly _timer: Timer;
+
+	constructor() {
+		this._timer = new Timer(60, () => {
+			// TODO
+		});
+	}
+
+	get timer() {
+		return this._timer;
+	}
+
+	setCurrentTeam(id: Team['id']) {
+		const index = this.teams.findIndex((team) => team.id === id);
+		if (index !== -1) {
+			this.currentTeamIndex = index;
+		}
+	}
+
+	getCurrentTeam(): Team {
+		return this.teams[this.currentTeamIndex];
+	}
+
+	resetTeam(id: Team['id']) {
+		const team = this.teams.find((team) => team.id === id);
+		if (team) {
+			team.reset();
+		}
+	}
+
+	nextWord() {
+		this.getCurrentTeam().nextWord();
+	}
+
+	getCurrentWord(): Word | null {
+		return this.getCurrentTeam().currentWord;
+	}
 
 	addTeam(): Team {
 		const team = new Team();
