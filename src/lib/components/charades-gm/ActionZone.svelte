@@ -7,13 +7,15 @@
 		onCorrect,
 		onPass,
 		onPause,
-		onResume
+		onResume,
+		onNext
 	}: {
 		status: string;
 		onCorrect: () => void;
 		onPass: () => void;
 		onPause: () => void;
 		onResume: () => void;
+		onNext: () => void;
 	} = $props();
 </script>
 
@@ -58,6 +60,16 @@
 		>
 			<Play class="mr-2 h-8 w-8" />
 			RESUME
+		</Button>
+	{:else if status === 'finished'}
+		<Button
+			variant="default"
+			size="lg"
+			class="col-span-4 h-20 rounded-2xl text-xl font-black tracking-tight uppercase"
+			onclick={onNext}
+		>
+			<Check class="mr-2 h-8 w-8" />
+			Confirm & Next Round
 		</Button>
 	{:else}
 		<div

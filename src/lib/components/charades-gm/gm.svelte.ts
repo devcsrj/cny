@@ -93,6 +93,12 @@ export class CharadesGM {
 		this.game.setWord(this.currentWordPool[this.currentWordIndex]);
 	}
 
+	prepareNextRound() {
+		this.game.reset();
+		this.activeTeamId = null;
+		this.currentWordIndex = 0;
+	}
+
 	resetGame() {
 		this.game.reset();
 		this.teams.forEach((t) => (t.score = 0));

@@ -68,6 +68,7 @@
 				onPass={() => gm.handleMiss()}
 				onPause={() => gm.game.pause()}
 				onResume={() => gm.game.start()}
+				onNext={() => gm.prepareNextRound()}
 			/>
 		</div>
 	{/if}
