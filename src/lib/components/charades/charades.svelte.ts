@@ -30,17 +30,38 @@ export class Charades {
 		}
 	}
 
-	sync(duration: number, remainingTimeMs: number, isRunning: boolean, serverTimestamp: number) {
+	sync(
+		duration: number,
+		remainingTimeMs: number,
+		isRunning: boolean,
+		serverTimestamp: number,
+		status?: CharadesStatus
+	) {
 		this.duration = duration / 1000;
 		const latency = (Date.now() - serverTimestamp) / 1000;
 		const remaining = remainingTimeMs / 1000;
 
-		if (isRunning) {
+		if (status) {
+			this.status = status;
+		} else {
+			// Fallback logic if status not provided
+			if (isRunning) {
+				this.status = 'playing';
+			} else if (remaining === 0) {
+				this.status = 'finished';
+			} else if (remaining < this.duration) {
+				this.status = 'paused';
+			} else {
+				this.status = 'waiting';
+			}
+		}
+
+		if (this.status === 'playing') {
 			this.timeLeft = Math.max(0, remaining - latency);
-			this.start();
+			this.resumeTimer();
 		} else {
 			this.timeLeft = remaining;
-			this.pause();
+			this.stopTimer();
 		}
 	}
 

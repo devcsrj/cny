@@ -16,7 +16,8 @@ export function dispatch(game: Charades, command: CharadesCommand) {
 				command.duration,
 				command.remainingTime,
 				command.isRunning,
-				command.serverTimestamp
+				command.serverTimestamp,
+				command.status
 			);
 			break;
 		case 'START':

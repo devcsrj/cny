@@ -1,22 +1,43 @@
 import { Timer } from '../timer';
 import { Team } from './team';
 import { Word } from './word';
-import type { CharadesStateData } from '$lib/types/charades';
+import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
 
 export class CharadesState {
 	private readonly teams = new Map<string, Team>();
 	private activeTeamId: string | null = null;
+	private _status: CharadesStatus = 'waiting';
 
 	private readonly _timer: Timer;
 
 	constructor(onExpired?: () => void) {
 		this._timer = new Timer(60000, () => {
+			this._status = 'finished';
 			if (onExpired) onExpired();
 		});
 	}
 
 	get timer() {
 		return this._timer;
+	}
+
+	get status() {
+		return this._status;
+	}
+
+	startTimer() {
+		this._timer.start();
+		this._status = 'playing';
+	}
+
+	pauseTimer() {
+		this._timer.pause();
+		this._status = 'paused';
+	}
+
+	resetTimer(durationMs?: number) {
+		this._timer.reset(durationMs);
+		this._status = 'waiting';
 	}
 
 	setCurrentTeam(id: Team['id']) {
@@ -82,6 +103,7 @@ export class CharadesState {
 				currentWordIndex: t.currentWordIndex
 			})),
 			activeTeamId: this.activeTeamId,
+			status: this._status,
 			timer: this._timer.state,
 			currentWord: this.getCurrentWord()?.text ?? null
 		};

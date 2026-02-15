@@ -1,3 +1,5 @@
+export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
+
 export interface CharadesSummary {
 	score: number;
 	correctWords: string[];
@@ -15,6 +17,7 @@ export interface CharadesTeam {
 export interface CharadesStateData {
 	teams: CharadesTeam[];
 	activeTeamId: string | null;
+	status: CharadesStatus;
 	timer: {
 		totalDuration: number;
 		remainingTime: number;
@@ -32,6 +35,7 @@ export type CharadesCommand =
 			remainingTime: number;
 			isRunning: boolean;
 			serverTimestamp: number;
+			status: CharadesStatus;
 	  }
 	| { type: 'START' }
 	| { type: 'PAUSE' }

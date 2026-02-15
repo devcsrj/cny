@@ -40,7 +40,8 @@ export class CharadesGM {
 				command.duration,
 				command.remainingTime,
 				command.isRunning,
-				command.serverTimestamp
+				command.serverTimestamp,
+				command.status
 			);
 		} else if (command.type === 'START') {
 			this.game.start();
@@ -66,7 +67,7 @@ export class CharadesGM {
 
 		const t = state.timer;
 		this.duration = t.totalDuration / 1000;
-		this.game.sync(t.totalDuration, t.remainingTime, t.isRunning, t.serverTimestamp);
+		this.game.sync(t.totalDuration, t.remainingTime, t.isRunning, t.serverTimestamp, state.status);
 	}
 
 	// --- Outgoing (GM) Controls ---
