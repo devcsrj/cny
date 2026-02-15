@@ -66,6 +66,7 @@ export class Timer {
 	// 4. Get the state to broadcast via SSE
 	get state() {
 		return {
+			totalDuration: this.totalDuration,
 			remainingTime: this.remainingTime,
 			isRunning: this.isRunning,
 			serverTimestamp: Date.now() // Crucial for client-side sync

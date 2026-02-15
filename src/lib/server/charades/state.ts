@@ -8,9 +8,9 @@ export class CharadesState {
 
 	private readonly _timer: Timer;
 
-	constructor() {
-		this._timer = new Timer(60, () => {
-			// TODO
+	constructor(onExpired?: () => void) {
+		this._timer = new Timer(60000, () => {
+			if (onExpired) onExpired();
 		});
 	}
 

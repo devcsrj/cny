@@ -12,7 +12,12 @@ export function dispatch(game: Charades, command: CharadesCommand) {
 			game.setWord(command.word);
 			break;
 		case 'SET_DURATION':
-			game.setDuration(command.seconds);
+			game.sync(
+				command.duration,
+				command.remainingTime,
+				command.isRunning,
+				command.serverTimestamp
+			);
 			break;
 		case 'START':
 			game.start();

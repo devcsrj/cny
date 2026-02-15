@@ -6,7 +6,13 @@ export interface CharadesSummary {
 
 export type CharadesCommand =
 	| { type: 'SET_WORD'; word: string }
-	| { type: 'SET_DURATION'; seconds: number }
+	| {
+			type: 'SET_DURATION';
+			duration: number;
+			remainingTime: number;
+			isRunning: boolean;
+			serverTimestamp: number;
+	  }
 	| { type: 'START' }
 	| { type: 'PAUSE' }
 	| { type: 'RESET' }
@@ -14,6 +20,7 @@ export type CharadesCommand =
 
 export type CharadesGmCommand =
 	| { type: 'SET_DURATION'; seconds: number }
+	| { type: 'SELECT_TEAM'; teamId: string }
 	| { type: 'START_TIMER' }
 	| { type: 'PAUSE_TIMER' }
 	| { type: 'RESET_TIMER' }

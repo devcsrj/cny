@@ -30,6 +30,20 @@ export class Charades {
 		}
 	}
 
+	sync(duration: number, remainingTimeMs: number, isRunning: boolean, serverTimestamp: number) {
+		this.duration = duration / 1000;
+		const latency = (Date.now() - serverTimestamp) / 1000;
+		const remaining = remainingTimeMs / 1000;
+
+		if (isRunning) {
+			this.timeLeft = Math.max(0, remaining - latency);
+			this.start();
+		} else {
+			this.timeLeft = remaining;
+			this.pause();
+		}
+	}
+
 	start() {
 		if (this.status === 'playing') return;
 		this.status = 'playing';

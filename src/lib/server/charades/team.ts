@@ -34,7 +34,7 @@ export class Team {
 	}
 
 	set words(words: Word[]) {
-		this.words = words;
+		this._words = words;
 	}
 
 	get words(): Word[] {
@@ -42,14 +42,14 @@ export class Team {
 	}
 
 	get score(): number {
-		return this._words.filter((word) => word.guessed).length;
+		return this._words.filter((word) => word.wasGuessed).length;
 	}
 
 	get summary(): CharadesSummary {
 		return {
 			score: this.score,
-			correctWords: this._words.filter((word) => word.guessed).map((word) => word.text),
-			missedWords: this._words.filter((word) => !word.guessed).map((word) => word.text)
+			correctWords: this._words.filter((word) => word.wasGuessed).map((word) => word.text),
+			missedWords: this._words.filter((word) => !word.wasGuessed).map((word) => word.text)
 		};
 	}
 
