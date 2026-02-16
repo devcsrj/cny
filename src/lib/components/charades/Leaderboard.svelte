@@ -1,10 +1,33 @@
 <script lang="ts">
 	import type { Charades } from './index.js';
 	import { cn } from '$lib/utils.js';
+	import JSConfetti from 'js-confetti';
 
 	let { game }: { game: Charades } = $props();
 
 	let rankedTeams = $derived([...game.teams].sort((a, b) => b.score - a.score));
+
+	$effect(() => {
+		if (game.isGameOver) {
+			const jsConfetti = new JSConfetti();
+			const fire = () => {
+				jsConfetti.addConfetti({
+					emojis: ['🎉', '🎊', '🧧', '🍊', '🏮', '🥠', '福'],
+					emojiSize: 50,
+					confettiNumber: 40
+				});
+				jsConfetti.addConfetti();
+			};
+
+			fire();
+			const interval = setInterval(fire, 3000);
+
+			return () => {
+				clearInterval(interval);
+				jsConfetti.clearCanvas();
+			};
+		}
+	});
 </script>
 
 <div

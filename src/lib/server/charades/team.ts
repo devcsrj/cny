@@ -5,6 +5,7 @@ import type { CharadesSummary } from '$lib/types/charades';
 export class Team {
 	public id = nanoid();
 	public name = 'New Team';
+	public hasPlayed = false;
 	private pool = new WordPool();
 
 	get words(): string[] {
@@ -55,5 +56,6 @@ export class Team {
 
 	reset() {
 		this.pool.reset();
+		this.hasPlayed = false;
 	}
 }

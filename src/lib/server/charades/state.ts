@@ -114,7 +114,8 @@ export class CharadesState {
 				score: t.score,
 				words: t.words,
 				guessedWords: t.guessedWords,
-				currentWordIndex: t.currentWordIndex
+				currentWordIndex: t.currentWordIndex,
+				hasPlayed: t.hasPlayed
 			})),
 			activeTeamId: ctx.activeTeamId,
 			status: this.status,

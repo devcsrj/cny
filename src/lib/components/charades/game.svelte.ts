@@ -27,6 +27,7 @@ export class Charades {
 	timeLeft = $derived(this.clock.timeLeft);
 	activeTeam = $derived(this.teams.find((t) => t.id === this.activeTeamId));
 	isWin = $derived(this.status === 'finished' && this.timeLeft > 0);
+	isGameOver = $derived(this.teams.length > 0 && this.teams.every((t) => t.hasPlayed));
 
 	/**
 	 * Logic for what to display on the result screens.

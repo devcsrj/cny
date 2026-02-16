@@ -125,6 +125,13 @@ const toggleLeaderboard = reduce<CharadesContext, { type: 'TOGGLE_LEADERBOARD' }
 	return { ...ctx, showLeaderboard: !ctx.showLeaderboard };
 });
 
+const markTeamAsPlayed = action<CharadesContext, { type: 'TIME_UP' }>((ctx) => {
+	if (ctx.activeTeamId) {
+		const team = ctx.teams.get(ctx.activeTeamId);
+		if (team) team.hasPlayed = true;
+	}
+});
+
 // Guards
 const hasActiveTeam = (ctx: CharadesContext) => ctx.activeTeamId !== null;
 const isPoolExhausted = (ctx: CharadesContext) => {
@@ -155,16 +162,24 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 				immediate(
 					'finished',
 					guard(isPoolExhausted),
-					action((ctx: CharadesContext) => ctx.timer.pause())
+					action((ctx: CharadesContext) => {
+						ctx.timer.pause();
+						const team = ctx.activeTeamId ? ctx.teams.get(ctx.activeTeamId) : null;
+						if (team) team.hasPlayed = true;
+					})
 				),
 				transition('PAUSE', 'paused', pauseTimer),
 				transition('MARK_CORRECT', 'playing', markCorrect),
 				transition('MARK_MISSED', 'playing', markMissed),
-				transition('TIME_UP', 'finished'),
+				transition('TIME_UP', 'finished', markTeamAsPlayed),
 				transition(
 					'FINISH',
 					'finished',
-					action((ctx: CharadesContext) => ctx.timer.pause())
+					action((ctx: CharadesContext) => {
+						ctx.timer.pause();
+						const team = ctx.activeTeamId ? ctx.teams.get(ctx.activeTeamId) : null;
+						if (team) team.hasPlayed = true;
+					})
 				)
 			),
 			paused: state<Transition<string>>(

@@ -13,6 +13,7 @@ export interface CharadesTeam {
 	words: string[];
 	guessedWords: string[];
 	currentWordIndex: number;
+	hasPlayed: boolean;
 }
 
 export interface CharadesTurn {
