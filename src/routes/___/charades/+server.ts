@@ -3,7 +3,7 @@ import type { CharadesGmCommand } from '$lib/types/charades';
 import { json, text, type RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async () => {
-	return json(CHARADES.getState());
+	return json(CHARADES.getData());
 };
 
 export const POST: RequestHandler = async ({ request }) => {

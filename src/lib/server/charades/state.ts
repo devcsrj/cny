@@ -3,15 +3,18 @@ import { Timer } from '../timer';
 import { Team } from './team';
 import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
 import { createCharadesMachine, type CharadesContext, type CharadesEvent } from './machine';
-import { GAME_MASTER } from '../bus';
 
 export class CharadesState {
 	private service: Service<ReturnType<typeof createCharadesMachine>>;
 
-	constructor(onExpired?: () => void) {
+	constructor(opts: {
+		onStateChanged?: (state: CharadesStateData) => void;
+		onExpired?: () => void;
+	}) {
+		const onExpired = opts.onExpired || (() => {});
 		const timer = new Timer(60000, () => {
 			this.service.send('TIME_UP');
-			if (onExpired) onExpired();
+			onExpired();
 		});
 
 		const initialContext: CharadesContext = {
@@ -22,16 +25,8 @@ export class CharadesState {
 		};
 
 		const machine = createCharadesMachine(initialContext);
-		this.service = interpret(machine, () => {
-			this.broadcast();
-		});
-	}
-
-	private broadcast() {
-		GAME_MASTER.emit('charades:command', {
-			type: 'SYNC_STATE',
-			state: this.getState()
-		});
+		const onStateChanged = opts.onStateChanged || (() => {});
+		this.service = interpret(machine, () => onStateChanged(this.getData()));
 	}
 
 	get timer() {
@@ -108,7 +103,7 @@ export class CharadesState {
 		this.send({ type: 'MARK_MISSED', teamId, word });
 	}
 
-	getState(): CharadesStateData {
+	getData(): CharadesStateData {
 		const ctx = this.service.context;
 		return {
 			teams: Array.from(ctx.teams.values()).map((t) => ({
