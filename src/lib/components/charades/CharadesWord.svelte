@@ -10,6 +10,10 @@
 	<h1
 		class="text-center text-6xl font-black tracking-tighter text-white uppercase md:text-8xl lg:text-9xl"
 	>
-		{game.word}
+		{#if game.status === 'playing'}
+			{game.word}
+		{:else}
+			Get Ready!
+		{/if}
 	</h1>
 </div>

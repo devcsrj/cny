@@ -66,7 +66,7 @@
 	{:else if game.status === 'finished'}
 		<div class="space-y-2">
 			<h2 class="text-3xl font-black tracking-tighter text-destructive uppercase italic">
-				Time's Up!
+				{game.isWin ? 'Round Complete!' : "Time's Up!"}
 			</h2>
 			<p class="text-sm text-muted-foreground">Round complete. Review results below.</p>
 		</div>

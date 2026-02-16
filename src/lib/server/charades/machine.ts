@@ -146,7 +146,11 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 				transition('START', 'playing', guard(hasActiveTeam), startTurn)
 			),
 			playing: state(
-				immediate('finished', guard(isPoolExhausted)),
+				immediate(
+					'finished',
+					guard(isPoolExhausted),
+					action((ctx: CharadesContext) => ctx.timer.pause())
+				),
 				transition('PAUSE', 'paused', pauseTimer),
 				transition('MARK_CORRECT', 'playing', markCorrect),
 				transition('MARK_MISSED', 'playing', markMissed),

@@ -25,6 +25,8 @@ export class Charades {
 	correctWords = $derived(this.activeTurn?.correctWords ?? []);
 	missedWords = $derived(this.activeTurn?.missedWords ?? []);
 
+	isWin = $derived(this.status === 'finished' && this.timeLeft > 0);
+
 	constructor() {
 		this.clock.reset(60 * 1000);
 	}
