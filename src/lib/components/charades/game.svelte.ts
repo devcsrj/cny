@@ -6,8 +6,10 @@ import type {
 	CharadesTurn
 } from '$lib/types/charades';
 import { ReactiveClock } from './clock.svelte.js';
+import { CharadesDispatcher } from './dispatcher.svelte.js';
 
 export class Charades {
+	// --- State ---
 	teams = $state<CharadesTeam[]>([]);
 	activeTeamId = $state<string | null>(null);
 	status = $state<CharadesStatus>('waiting');
@@ -17,21 +19,31 @@ export class Charades {
 	duration = $state(60); // In seconds
 	showLeaderboard = $state(false);
 
+	// --- Modules ---
 	private clock = new ReactiveClock();
+	private dispatcher = new CharadesDispatcher();
+
+	// --- Derived ---
 	timeLeft = $derived(this.clock.timeLeft);
-
 	activeTeam = $derived(this.teams.find((t) => t.id === this.activeTeamId));
-
-	score = $derived(this.activeTurn?.score ?? 0);
-	correctWords = $derived(this.activeTurn?.correctWords ?? []);
-	missedWords = $derived(this.activeTurn?.missedWords ?? []);
-
 	isWin = $derived(this.status === 'finished' && this.timeLeft > 0);
+
+	/**
+	 * Grouped turn statistics for cleaner UI access
+	 */
+	turn = $derived({
+		score: this.activeTurn?.score ?? 0,
+		correctWords: this.activeTurn?.correctWords ?? [],
+		missedWords: this.activeTurn?.missedWords ?? []
+	});
 
 	constructor() {
 		this.clock.reset(60 * 1000);
 	}
 
+	/**
+	 * Synchronize local state with server data
+	 */
 	update(data: CharadesStateData) {
 		this.teams = data.teams;
 		this.activeTeamId = data.activeTeamId;
@@ -41,19 +53,15 @@ export class Charades {
 		this.activeTurn = data.activeTurn;
 		this.duration = data.timer.totalDuration / 1000;
 		this.showLeaderboard = data.showLeaderboard;
+
 		this.clock.sync(data.timer.remainingTime, data.timer.serverTimestamp, data.timer.isRunning);
 	}
 
+	/**
+	 * Dispatch an action to the server
+	 */
 	async send(action: CharadesAction) {
-		try {
-			await fetch('/___/charades', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(action)
-			});
-		} catch (e) {
-			console.error('Failed to dispatch action', action, e);
-		}
+		return this.dispatcher.send(action);
 	}
 
 	destroy() {

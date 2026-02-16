@@ -18,7 +18,7 @@
 			Final Score
 		</div>
 		<div class="text-7xl leading-none font-black md:text-9xl">
-			{game.score}
+			{game.turn.score}
 		</div>
 	</div>
 
@@ -30,12 +30,12 @@
 			>
 				Correct
 				<span class="rounded bg-white px-2 py-0.5 text-sm text-destructive"
-					>{game.correctWords.length}</span
+					>{game.turn.correctWords.length}</span
 				>
 			</h2>
-			{#if game.correctWords.length > 0}
+			{#if game.turn.correctWords.length > 0}
 				<ul class="flex flex-col gap-2">
-					{#each game.correctWords as word, i (i)}
+					{#each game.turn.correctWords as word, i (i)}
 						<li class="line-clamp-1 text-lg font-bold tracking-tight uppercase md:text-2xl">
 							✓ {word}
 						</li>
@@ -53,12 +53,12 @@
 			>
 				Missed
 				<span class="rounded bg-white/30 px-2 py-0.5 text-sm text-white"
-					>{game.missedWords.length}</span
+					>{game.turn.missedWords.length}</span
 				>
 			</h2>
-			{#if game.missedWords.length > 0}
+			{#if game.turn.missedWords.length > 0}
 				<ul class="flex flex-col gap-2">
-					{#each game.missedWords as word, i (i)}
+					{#each game.turn.missedWords as word, i (i)}
 						<li
 							class="line-clamp-1 text-lg font-bold tracking-tight uppercase line-through opacity-70 md:text-2xl"
 						>
