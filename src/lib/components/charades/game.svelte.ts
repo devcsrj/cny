@@ -29,13 +29,35 @@ export class Charades {
 	isWin = $derived(this.status === 'finished' && this.timeLeft > 0);
 
 	/**
-	 * Grouped turn statistics for cleaner UI access
+	 * Logic for what to display on the result screens.
+	 * If the round was completed successfully (win), we show the team's total progress.
+	 * Otherwise, we show the results of the specific turn.
 	 */
-	turn = $derived({
-		score: this.activeTurn?.score ?? 0,
-		correctWords: this.activeTurn?.correctWords ?? [],
-		missedWords: this.activeTurn?.missedWords ?? []
+	displayStats = $derived.by(() => {
+		const team = this.activeTeam;
+		const turn = this.activeTurn;
+
+		if (this.isWin && team) {
+			const correct = team.guessedWords;
+			const missed = team.words.filter((w) => !correct.includes(w));
+			return {
+				score: team.score,
+				correct,
+				missed
+			};
+		}
+
+		return {
+			score: turn?.score ?? 0,
+			correct: turn?.correctWords ?? [],
+			missed: turn?.missedWords ?? []
+		};
 	});
+
+	// Top-level accessors for components
+	score = $derived(this.displayStats.score);
+	correctWords = $derived(this.displayStats.correct);
+	missedWords = $derived(this.displayStats.missed);
 
 	constructor() {
 		this.clock.reset(60 * 1000);
