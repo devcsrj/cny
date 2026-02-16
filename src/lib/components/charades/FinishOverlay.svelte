@@ -5,7 +5,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-50 flex animate-in flex-col items-center justify-center overflow-y-auto bg-destructive p-8 text-white duration-300 fade-in zoom-in"
+	class="fixed inset-0 z-50 flex animate-in flex-col items-center justify-center overflow-y-auto bg-primary p-8 text-white duration-300 fade-in zoom-in"
 >
 	<h1
 		class="mb-4 text-center text-5xl font-black tracking-tighter uppercase italic md:text-7xl lg:text-8xl"

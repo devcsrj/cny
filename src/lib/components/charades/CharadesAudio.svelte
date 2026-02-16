@@ -16,16 +16,6 @@
 	let lastStatus = $state(game.status);
 	let isWarningActive = $state(false);
 
-	// Derived "Phase" determines high-level behavior
-	const phase = $derived.by(() => {
-		if (game.status === 'waiting') return 'idle';
-		if (game.status === 'paused') return 'paused';
-		if (game.status === 'playing') {
-			return game.timeLeft <= 10 ? 'warning' : 'playing';
-		}
-		return 'finished';
-	});
-
 	// Synchronize settings to controller
 	$effect(() => {
 		controller.volume = volume;
@@ -38,49 +28,55 @@
 		controller.unlock();
 	}
 
-	// 1. Manage Music Transitions (Declarative)
+	// 1. Manage Music (Declarative)
 	$effect(() => {
 		if (!enabled) return;
 
-		switch (phase) {
-			case 'idle':
-				controller.stopAll();
-				isWarningActive = false;
-				break;
-			case 'playing':
-				if (lastStatus !== 'playing') {
-					controller.stopAll();
-					controller.playMusic(1.2);
-				}
-				break;
-			case 'warning':
-				if (!isWarningActive) {
-					isWarningActive = true;
-					controller.rampPlaybackRate(1.5);
-				}
-				break;
-			case 'paused':
-				controller.pauseMusic(true); // Dimming
-				break;
-			case 'finished':
-				if (lastStatus === 'playing') {
-					controller.stopAll();
-					const sfxName: 'victory' | 'times-up' = game.isWin ? 'victory' : 'times-up';
-					controller.playSfx(sfxName);
-				}
-				break;
-		}
+		const status = game.status;
+		const timeLeft = game.timeLeft;
 
-		lastStatus = game.status;
+		if (status === 'playing') {
+			if (timeLeft <= 10) {
+				controller.playMusic(1.5);
+			} else {
+				controller.playMusic(1.2);
+			}
+		} else if (status === 'paused') {
+			controller.pauseMusic(true);
+		} else {
+			controller.stopAll();
+		}
 	});
 
-	// 2. Handle One-Shot Score SFX
+	// 2. Ramping logic for the 10s warning
 	$effect(() => {
 		if (!enabled) return;
+		if (game.status === 'playing' && game.timeLeft <= 10 && !isWarningActive) {
+			isWarningActive = true;
+			controller.rampPlaybackRate(1.5);
+		}
+		if (game.status !== 'playing' || game.timeLeft > 10) {
+			isWarningActive = false;
+		}
+	});
+
+	// 3. One-shot SFX
+	$effect(() => {
+		if (!enabled) return;
+
+		// Score SFX
 		if (game.score > lastScore && game.status === 'playing') {
 			controller.playSfx('correct');
 		}
 		lastScore = game.score;
+
+		// Finish SFX
+		if (game.status === 'finished' && lastStatus === 'playing') {
+			controller.stopAll();
+			const sfxName: 'victory' | 'times-up' = game.isWin ? 'victory' : 'times-up';
+			controller.playSfx(sfxName);
+		}
+		lastStatus = game.status;
 	});
 
 	onDestroy(() => controller.destroy());
