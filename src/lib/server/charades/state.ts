@@ -71,7 +71,7 @@ export class CharadesState {
 	}
 
 	resetTeam(id: Team['id']) {
-		this.send({ type: 'RESET_TEAM', id });
+		this.send({ type: 'RESET_TEAM', teamId: id });
 	}
 
 	getCurrentWord() {
@@ -88,11 +88,11 @@ export class CharadesState {
 	}
 
 	updateTeam(id: Team['id'], opts: { name?: string; words?: string[] }) {
-		this.send({ type: 'UPDATE_TEAM', id, ...opts });
+		this.send({ type: 'UPDATE_TEAM', teamId: id, ...opts });
 	}
 
 	deleteTeam(id: Team['id']) {
-		this.send({ type: 'DELETE_TEAM', id });
+		this.send({ type: 'DELETE_TEAM', teamId: id });
 	}
 
 	markCorrect(teamId: Team['id'], word: string) {

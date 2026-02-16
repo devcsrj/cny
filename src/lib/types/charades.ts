@@ -44,9 +44,9 @@ export interface CharadesStateData {
 export type CharadesAction =
 	| { type: 'ADD_TEAM' }
 	| { type: 'SELECT_TEAM'; teamId: string }
-	| { type: 'UPDATE_TEAM'; id: string; name?: string; words?: string[] }
-	| { type: 'DELETE_TEAM'; id: string }
-	| { type: 'RESET_TEAM'; id: string }
+	| { type: 'UPDATE_TEAM'; teamId: string; name?: string; words?: string[] }
+	| { type: 'DELETE_TEAM'; teamId: string }
+	| { type: 'RESET_TEAM'; teamId: string }
 	| { type: 'SET_DURATION'; durationMs: number }
 	| { type: 'START' }
 	| { type: 'PAUSE' }

@@ -12,7 +12,7 @@
 		if (confirm('Are you sure you want to reset the entire game?')) {
 			game.send({ type: 'RESET' });
 			game.teams.forEach((t) => {
-				game.send({ type: 'RESET_TEAM', id: t.id });
+				game.send({ type: 'RESET_TEAM', teamId: t.id });
 			});
 		}
 	}
@@ -28,9 +28,9 @@
 		activeTeamId={game.activeTeamId}
 		onSelectTeam={(id) => game.send({ type: 'SELECT_TEAM', teamId: id })}
 		onUpdateTeam={(id, name, words) => {
-			game.send({ type: 'UPDATE_TEAM', id, name, words });
+			game.send({ type: 'UPDATE_TEAM', teamId: id, name, words });
 		}}
-		onDeleteTeam={(id) => game.send({ type: 'DELETE_TEAM', id })}
+		onDeleteTeam={(id) => game.send({ type: 'DELETE_TEAM', teamId: id })}
 		onAddTeam={() => game.send({ type: 'ADD_TEAM' })}
 		disabled={game.status !== 'waiting'}
 	/>

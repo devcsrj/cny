@@ -34,30 +34,30 @@ const selectTeam = reduce<CharadesContext, { type: 'SELECT_TEAM'; teamId: string
 
 const updateTeam = reduce<
 	CharadesContext,
-	{ type: 'UPDATE_TEAM'; id: string; name?: string; words?: string[] }
+	{ type: 'UPDATE_TEAM'; teamId: string; name?: string; words?: string[] }
 >((ctx, ev) => {
-	const team = ctx.teams.get(ev.id);
+	const team = ctx.teams.get(ev.teamId);
 	if (!team) return ctx;
 	if (ev.name) team.name = ev.name;
 	if (ev.words) team.words = ev.words;
 	return { ...ctx };
 });
 
-const deleteTeam = reduce<CharadesContext, { type: 'DELETE_TEAM'; id: string }>((ctx, ev) => {
+const deleteTeam = reduce<CharadesContext, { type: 'DELETE_TEAM'; teamId: string }>((ctx, ev) => {
 	const teams = new Map(ctx.teams);
-	teams.delete(ev.id);
+	teams.delete(ev.teamId);
 	let { activeTeamId, activeTurn } = ctx;
-	if (activeTeamId === ev.id) {
+	if (activeTeamId === ev.teamId) {
 		activeTeamId = null;
 		activeTurn = null;
 	}
 	return { ...ctx, teams, activeTeamId, activeTurn };
 });
 
-const resetTeam = reduce<CharadesContext, { type: 'RESET_TEAM'; id: string }>((ctx, ev) => {
-	ctx.teams.get(ev.id)?.reset();
+const resetTeam = reduce<CharadesContext, { type: 'RESET_TEAM'; teamId: string }>((ctx, ev) => {
+	ctx.teams.get(ev.teamId)?.reset();
 	let { activeTurn } = ctx;
-	if (ctx.activeTeamId === ev.id) {
+	if (ctx.activeTeamId === ev.teamId) {
 		activeTurn = null;
 	}
 	return { ...ctx, activeTurn };
