@@ -123,6 +123,32 @@ const markMissed = reduce<HenyoContext, { type: 'MARK_MISSED'; teamId: string; w
 	}
 );
 
+const setWordStatus = reduce<
+	HenyoContext,
+	{
+		type: 'SET_WORD_STATUS';
+		teamId: string;
+		word: string;
+		status: 'correct' | 'missed' | 'unmarked';
+	}
+>((ctx, ev) => {
+	const team = ctx.teams.get(ev.teamId);
+	if (!team) return ctx;
+
+	if (ev.status === 'correct') {
+		team.guessed(ev.word);
+		ctx.activeTurn?.recordCorrect(ev.word);
+	} else if (ev.status === 'missed') {
+		team.missed(ev.word);
+		ctx.activeTurn?.recordMissed(ev.word);
+	} else {
+		team.missed(ev.word);
+		ctx.activeTurn?.recordUnmarked(ev.word);
+	}
+
+	return { ...ctx };
+});
+
 const finalizeTurn = reduce<HenyoContext, HenyoAction>((ctx) => {
 	ctx.timer.pause();
 	const team = ctx.activeTeamId ? ctx.teams.get(ctx.activeTeamId) : null;
@@ -191,17 +217,20 @@ export const createHenyoMachine = (initialCtx: HenyoContext) => {
 				transition('PAUSE', 'paused', pauseTimer),
 				transition('MARK_CORRECT', 'playing', markCorrect),
 				transition('MARK_MISSED', 'playing', markMissed),
+				transition('SET_WORD_STATUS', 'playing', setWordStatus),
 				transition('TIME_UP', 'finished', finalizeTurn),
 				transition('FINISH', 'finished', finalizeTurn)
 			),
 			paused: state<Transition<string>>(
 				...adminTransitions('paused'),
 				transition('RESUME', 'playing', resumeTimer),
+				transition('SET_WORD_STATUS', 'paused', setWordStatus),
 				transition('RESET', 'waiting', resetGame),
 				transition('FINISH', 'finished', finalizeTurn)
 			),
 			finished: state<Transition<string>>(
 				...adminTransitions('finished'),
+				transition('SET_WORD_STATUS', 'finished', setWordStatus),
 				transition('RESET', 'waiting', resetGame),
 				transition('PREPARE', 'starting', guard(hasActiveTeam), prepareTurn)
 			)

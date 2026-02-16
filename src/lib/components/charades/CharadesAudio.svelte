@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { Charades } from './game.svelte.js';
 	import { AudioController } from '../cny/index.js';
+	import type { CharadesStatus } from '$lib/types/charades';
 
 	let {
 		game,
@@ -12,8 +13,8 @@
 	const controller = new AudioController();
 
 	// Track internal logic states
-	let lastScore = $state(game.score);
-	let lastStatus = $state(game.status);
+	let lastScore = $state<number | null>(null);
+	let lastStatus = $state<CharadesStatus | null>(null);
 	let isWarningActive = $state(false);
 
 	// Synchronize settings to controller
@@ -63,6 +64,13 @@
 	// 3. One-shot SFX
 	$effect(() => {
 		if (!enabled) return;
+
+		// Initialize last values on first run
+		if (lastScore === null || lastStatus === null) {
+			lastScore = game.score;
+			lastStatus = game.status;
+			return;
+		}
 
 		// Score SFX
 		if (game.score > lastScore && game.status === 'playing') {

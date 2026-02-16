@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GMHeader from '../cny/gm/GMHeader.svelte';
 	import TeamDashboard from '../cny/gm/TeamDashboard.svelte';
-	import GameStage from '../cny/gm/GameStage.svelte';
+	import HenyoGameStage from './HenyoGameStage.svelte';
 	import HenyoActionZone from './HenyoActionZone.svelte';
 	import SetupTray from '../cny/gm/SetupTray.svelte';
 	import { Henyo } from '$lib/components/henyo/game.svelte.js';
@@ -15,6 +15,27 @@
 				game.send({ type: 'RESET_TEAM', teamId: t.id });
 			});
 		}
+	}
+
+	function handleWordClick(wordText: string) {
+		const isGuessed = game.activeTeam?.guessedWords?.includes(wordText);
+		const isMissed = game.activeTurn?.missedWords?.includes(wordText);
+
+		let newStatus: 'correct' | 'missed' | 'unmarked';
+		if (isGuessed) {
+			newStatus = 'missed';
+		} else if (isMissed) {
+			newStatus = 'unmarked';
+		} else {
+			newStatus = 'correct';
+		}
+
+		game.send({
+			type: 'SET_WORD_STATUS',
+			teamId: game.activeTeamId!,
+			word: wordText,
+			status: newStatus
+		});
 	}
 
 	let isWin = $derived(
@@ -48,11 +69,10 @@
 		disabled={game.status !== 'waiting' && game.status !== 'finished'}
 	/>
 
-	<GameStage
-		status={game.status}
-		word={game.word}
-		activeTeam={game.activeTeam as any}
+	<HenyoGameStage
+		{game}
 		{isWin}
+		onWordClick={handleWordClick}
 		instruction="Select a team, duration and input the secret words below."
 	/>
 

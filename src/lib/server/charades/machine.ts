@@ -119,6 +119,32 @@ const markMissed = reduce<CharadesContext, { type: 'MARK_MISSED'; teamId: string
 	}
 );
 
+const setWordStatus = reduce<
+	CharadesContext,
+	{
+		type: 'SET_WORD_STATUS';
+		teamId: string;
+		word: string;
+		status: 'correct' | 'missed' | 'unmarked';
+	}
+>((ctx, ev) => {
+	const team = ctx.teams.get(ev.teamId);
+	if (!team) return ctx;
+
+	if (ev.status === 'correct') {
+		team.guessed(ev.word);
+		ctx.activeTurn?.recordCorrect(ev.word);
+	} else if (ev.status === 'missed') {
+		team.missed(ev.word);
+		ctx.activeTurn?.recordMissed(ev.word);
+	} else {
+		team.missed(ev.word);
+		ctx.activeTurn?.recordUnmarked(ev.word);
+	}
+
+	return { ...ctx };
+});
+
 const resetGame = reduce<CharadesContext, { type: 'RESET'; durationMs?: number }>((ctx, ev) => {
 	ctx.timer.reset(ev.durationMs);
 	return {
@@ -190,6 +216,7 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 				transition('PAUSE', 'paused', pauseTimer),
 				transition('MARK_CORRECT', 'playing', markCorrect),
 				transition('MARK_MISSED', 'playing', markMissed),
+				transition('SET_WORD_STATUS', 'playing', setWordStatus),
 				transition('TIME_UP', 'finished', markTeamAsPlayed),
 				transition(
 					'FINISH',
@@ -204,11 +231,13 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 			paused: state<Transition<string>>(
 				...adminTransitions('paused'),
 				transition('RESUME', 'playing', resumeTimer),
+				transition('SET_WORD_STATUS', 'paused', setWordStatus),
 				transition('RESET', 'waiting', resetGame),
 				transition('FINISH', 'finished')
 			),
 			finished: state<Transition<string>>(
 				...adminTransitions('finished'),
+				transition('SET_WORD_STATUS', 'finished', setWordStatus),
 				transition('RESET', 'waiting', resetGame),
 				transition('PREPARE', 'starting', guard(hasActiveTeam), prepareTurn)
 			)

@@ -1,3 +1,4 @@
+// Statuses for the Charades game
 export type CharadesStatus = 'waiting' | 'starting' | 'playing' | 'paused' | 'finished';
 
 export interface CharadesSummary {
@@ -12,6 +13,7 @@ export interface CharadesTeam {
 	score: number;
 	words: string[];
 	guessedWords: string[];
+	missedWords: string[];
 	currentWordIndex: number;
 	hasPlayed: boolean;
 }
@@ -59,6 +61,12 @@ export type CharadesAction =
 	| { type: 'RESET'; durationMs?: number }
 	| { type: 'MARK_CORRECT'; teamId: string; word: string }
 	| { type: 'MARK_MISSED'; teamId: string; word: string }
+	| {
+			type: 'SET_WORD_STATUS';
+			teamId: string;
+			word: string;
+			status: 'correct' | 'missed' | 'unmarked';
+	  }
 	| { type: 'TIME_UP' }
 	| { type: 'FINISH' }
 	| { type: 'TOGGLE_LEADERBOARD' };

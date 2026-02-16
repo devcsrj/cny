@@ -4,4 +4,5 @@ export interface GMTeam {
 	score: number;
 	words: string[];
 	guessedWords?: string[];
+	missedWords?: string[];
 }

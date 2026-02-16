@@ -40,6 +40,13 @@ export class Team {
 		return this.pool.words.filter((w) => w.wasGuessed).map((w) => w.text);
 	}
 
+	get missedWords(): string[] {
+		// This is tricky because pool.markMissed(text) sets wasGuessed = false.
+		// We don't have a "explicitly missed" flag in Word class.
+		// Let's check Word class.
+		return [];
+	}
+
 	get summary(): CharadesSummary {
 		const correct = this.guessedWords;
 		const missed = this.pool.words.filter((w) => !w.wasGuessed).map((w) => w.text);

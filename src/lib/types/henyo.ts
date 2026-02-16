@@ -49,6 +49,12 @@ export type HenyoAction =
 	| { type: 'RESUME' }
 	| { type: 'MARK_CORRECT'; teamId: string; word: string }
 	| { type: 'MARK_MISSED'; teamId: string; word: string }
+	| {
+			type: 'SET_WORD_STATUS';
+			teamId: string;
+			word: string;
+			status: 'correct' | 'missed' | 'unmarked';
+	  }
 	| { type: 'TIME_UP' }
 	| { type: 'FINISH' }
 	| { type: 'RESET'; durationMs?: number }

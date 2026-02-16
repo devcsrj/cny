@@ -14,15 +14,20 @@ export class Turn {
 	}
 
 	recordCorrect(word: string) {
-		if (!this.correctWords.includes(word) && !this.missedWords.includes(word)) {
-			this.correctWords.push(word);
-		}
+		this.correctWords = this.correctWords.filter((w) => w !== word);
+		this.missedWords = this.missedWords.filter((w) => w !== word);
+		this.correctWords.push(word);
 	}
 
 	recordMissed(word: string) {
-		if (!this.correctWords.includes(word) && !this.missedWords.includes(word)) {
-			this.missedWords.push(word);
-		}
+		this.correctWords = this.correctWords.filter((w) => w !== word);
+		this.missedWords = this.missedWords.filter((w) => w !== word);
+		this.missedWords.push(word);
+	}
+
+	recordUnmarked(word: string) {
+		this.correctWords = this.correctWords.filter((w) => w !== word);
+		this.missedWords = this.missedWords.filter((w) => w !== word);
 	}
 
 	getData(): CharadesTurn {
