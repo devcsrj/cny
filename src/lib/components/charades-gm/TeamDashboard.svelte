@@ -58,7 +58,7 @@
 						</CardTitle>
 					</CardHeader>
 					<CardContent class="p-3 pt-1">
-						<div class="text-2xl font-bold">{team.score}</div>
+						<div class="text-2xl font-bold">{team.score}/{team.words.length}</div>
 						{#if activeTeamId === team.id}
 							<Badge variant="default" class="mt-2 px-1 py-0 text-[10px]">ACTIVE</Badge>
 						{/if}
