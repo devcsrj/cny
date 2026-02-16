@@ -19,7 +19,9 @@
 
 	let isWin = $derived(
 		game.status === 'finished' &&
-			game.activeTeam?.words.length === game.activeTeam?.guessedWords.length
+			game.activeTeam &&
+			game.activeTeam.words.length > 0 &&
+			game.activeTeam.words.length === game.activeTeam.guessedWords.length
 	);
 </script>
 

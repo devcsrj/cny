@@ -46,36 +46,46 @@ export class HenyoState {
 	}
 
 	send(event: HenyoAction) {
+		// If we are starting a new round, ensure we clean up any old countdowns
+		if (event.type === 'PREPARE' || event.type === 'RESET' || event.type === 'DELETE_TEAM') {
+			this.stopCountdown();
+		}
+
 		this.service.send(event);
+
+		// Logic to handle countdown side-effects when the FSM transitions to 'starting'
+		if (this.status === 'starting' && !this.countdownInterval) {
+			this.runCountdownStep(3);
+		}
 	}
 
-	prepareTurn() {
-		if (this.status !== 'waiting' && this.status !== 'finished') return;
+	private runCountdownStep(value: number) {
+		this.stopCountdown();
 
-		this.send({ type: 'PREPARE' });
+		if (value <= 0) {
+			this.service.send({ type: 'START' });
+			return;
+		}
 
-		let count = 3;
-		if (this.countdownInterval) clearInterval(this.countdownInterval);
+		this.service.send({ type: 'COUNTDOWN_TICK', value });
 
-		this.countdownInterval = setInterval(() => {
-			count--;
-			if (count > 0) {
-				this.send({ type: 'COUNTDOWN_TICK', value: count });
-			} else {
-				if (this.countdownInterval) {
-					clearInterval(this.countdownInterval);
-					this.countdownInterval = null;
-				}
-				this.send({ type: 'START' });
-			}
+		this.countdownInterval = setTimeout(() => {
+			this.runCountdownStep(value - 1);
 		}, 1000);
+	}
+
+	private stopCountdown() {
+		if (this.countdownInterval) {
+			clearTimeout(this.countdownInterval);
+			this.countdownInterval = null;
+		}
 	}
 
 	startTimer() {
 		if (this.status === 'paused') {
 			this.send({ type: 'RESUME' });
 		} else {
-			this.prepareTurn();
+			this.send({ type: 'PREPARE' });
 		}
 	}
 
@@ -88,10 +98,6 @@ export class HenyoState {
 	}
 
 	resetTimer(durationMs?: number) {
-		if (this.countdownInterval) {
-			clearInterval(this.countdownInterval);
-			this.countdownInterval = null;
-		}
 		this.send({ type: 'RESET', durationMs });
 	}
 
