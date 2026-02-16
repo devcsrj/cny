@@ -4,7 +4,7 @@
 	import { cn } from '$lib/utils.js';
 	import WordManager from './WordManager.svelte';
 	import { Plus } from '@lucide/svelte';
-	import type { CharadesTeam } from '$lib/types/charades';
+	import type { GMTeam } from './types';
 
 	let {
 		teams = [],
@@ -15,7 +15,7 @@
 		onAddTeam,
 		disabled = false
 	}: {
-		teams: CharadesTeam[];
+		teams: GMTeam[];
 		activeTeamId: string | null;
 		onSelectTeam: (id: string) => void;
 		onUpdateTeam: (id: string, name: string, words: string[]) => void;

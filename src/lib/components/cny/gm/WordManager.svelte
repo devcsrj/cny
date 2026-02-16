@@ -5,14 +5,14 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Pencil } from '@lucide/svelte';
-	import type { CharadesTeam } from '$lib/types/charades';
+	import type { GMTeam } from './types';
 
 	let {
 		team,
 		onSave,
 		onDelete
 	}: {
-		team: CharadesTeam;
+		team: GMTeam;
 		onSave: (name: string, words: string[]) => void;
 		onDelete: () => void;
 	} = $props();

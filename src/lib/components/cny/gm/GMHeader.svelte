@@ -2,7 +2,6 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { RotateCcw, Trophy } from '@lucide/svelte';
-	import type { CharadesStatus } from '$lib/types/charades';
 
 	let {
 		status = 'waiting',
@@ -11,15 +10,16 @@
 		onReset,
 		onToggleLeaderboard
 	}: {
-		status: CharadesStatus;
+		status: string;
 		timeLeft: number;
 		showLeaderboard?: boolean;
 		onReset: () => void;
 		onToggleLeaderboard: () => void;
 	} = $props();
 
-	const statusColor: Record<CharadesStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+	const statusColor: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
 		waiting: 'secondary',
+		starting: 'secondary',
 		playing: 'default',
 		paused: 'outline',
 		finished: 'destructive'
@@ -28,7 +28,7 @@
 
 <header class="flex items-center justify-between border-b p-4">
 	<div class="flex items-center gap-2">
-		<Badge variant={statusColor[status]} class="capitalize">
+		<Badge variant={statusColor[status] || 'default'} class="capitalize">
 			{status}
 		</Badge>
 	</div>

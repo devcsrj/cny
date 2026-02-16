@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Play } from '@lucide/svelte';
 
 	let {
 		duration = 60,
+		label = 'START ROUND',
 		onSetDuration,
 		onStart,
 		canStart = false
 	}: {
 		duration: number;
+		label?: string;
 		onSetDuration: (seconds: number) => void;
 		onStart: () => void;
 		canStart: boolean;
@@ -44,7 +45,7 @@
 			onclick={onStart}
 		>
 			<Play class="mr-2 h-6 w-6 fill-current" />
-			START ROUND
+			{label}
 		</Button>
 	</div>
 </div>

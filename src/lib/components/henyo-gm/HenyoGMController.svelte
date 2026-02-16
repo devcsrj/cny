@@ -2,11 +2,11 @@
 	import GMHeader from '../cny/gm/GMHeader.svelte';
 	import TeamDashboard from '../cny/gm/TeamDashboard.svelte';
 	import GameStage from '../cny/gm/GameStage.svelte';
-	import ActionZone from './ActionZone.svelte';
+	import HenyoActionZone from './HenyoActionZone.svelte';
 	import SetupTray from '../cny/gm/SetupTray.svelte';
-	import { Charades } from '$lib/components/charades/game.svelte.js';
+	import { Henyo } from '$lib/components/henyo/game.svelte.js';
 
-	let { game }: { game: Charades } = $props();
+	let { game }: { game: Henyo } = $props();
 
 	function handleReset() {
 		if (confirm('Are you sure you want to reset the entire game?')) {
@@ -16,6 +16,11 @@
 			});
 		}
 	}
+
+	let isWin = $derived(
+		game.status === 'finished' &&
+			game.activeTeam?.words.length === game.activeTeam?.guessedWords.length
+	);
 </script>
 
 <div
@@ -30,7 +35,7 @@
 	/>
 
 	<TeamDashboard
-		teams={game.teams}
+		teams={game.teams as any}
 		activeTeamId={game.activeTeamId}
 		onSelectTeam={(id) => game.send({ type: 'SELECT_TEAM', teamId: id })}
 		onUpdateTeam={(id, name, words) => {
@@ -45,23 +50,27 @@
 		status={game.status}
 		word={game.word}
 		activeTeam={game.activeTeam as any}
-		isWin={game.isWin}
+		{isWin}
+		instruction="Select a team, duration and input the secret words below."
 	/>
 
-	{#if game.status === 'waiting'}
+	{#if game.status === 'waiting' || game.status === 'finished'}
 		<div class="mt-auto">
 			<SetupTray
 				duration={game.duration}
+				label="PREPARE ROUND"
 				onSetDuration={(s) => game.send({ type: 'SET_DURATION', durationMs: s * 1000 })}
-				onStart={() => game.send({ type: 'START' })}
-				canStart={game.activeTeamId !== null}
+				onStart={() => game.send({ type: 'PREPARE' })}
+				canStart={game.activeTeamId !== null && game.activeTeam!.words.length > 0}
 			/>
 		</div>
 	{:else}
 		<div class="mt-auto">
-			<ActionZone
+			<HenyoActionZone
 				status={game.status}
+				countdown={game.countdown}
 				canAction={!!game.word}
+				onPrepare={() => game.send({ type: 'PREPARE' })}
 				onCorrect={() =>
 					game.send({
 						type: 'MARK_CORRECT',
