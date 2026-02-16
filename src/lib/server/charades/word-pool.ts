@@ -9,7 +9,25 @@ export class WordPool {
 	}
 
 	setWords(words: string[]) {
-		this._words = words.map((w) => new Word(w));
+		// Capture currently guessed words
+		const guessedMap = new Map<string, number>();
+		for (const w of this._words) {
+			if (w.wasGuessed) {
+				guessedMap.set(w.text, (guessedMap.get(w.text) || 0) + 1);
+			}
+		}
+
+		// Create new words and restore guessed state
+		this._words = words.map((text) => {
+			const word = new Word(text);
+			const remainingGuessed = guessedMap.get(text) || 0;
+			if (remainingGuessed > 0) {
+				word.guessed();
+				guessedMap.set(text, remainingGuessed - 1);
+			}
+			return word;
+		});
+
 		this._currentIndex = 0;
 		this.shuffle();
 	}
@@ -29,7 +47,6 @@ export class WordPool {
 	get currentWord(): Word | null {
 		if (this._words.length === 0) return null;
 
-		const start = this._currentIndex;
 		let current = this._currentIndex;
 
 		// Find first non-guessed word starting from current index

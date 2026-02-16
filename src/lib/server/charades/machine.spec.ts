@@ -184,4 +184,35 @@ describe('Charades State Machine', () => {
 		service.send('TOGGLE_LEADERBOARD');
 		expect(service.context.showLeaderboard).toBe(initialStatus);
 	});
+
+	it('should preserve scores when updating a team word list', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		const team = service.context.teams.get(teamId)!;
+
+		// Initial words and mark one as correct
+		team.words = ['Apple', 'Banana'];
+		team.guessed('Apple');
+		expect(team.score).toBe(1);
+
+		// Update words, including the guessed one
+		service.send({
+			type: 'UPDATE_TEAM',
+			teamId,
+			words: ['Apple', 'Cherry', 'Date']
+		});
+
+		// Apple should still be guessed
+		expect(team.score).toBe(1);
+		expect(team.guessedWords).toContain('Apple');
+
+		// Update words, removing the guessed one
+		service.send({
+			type: 'UPDATE_TEAM',
+			teamId,
+			words: ['Cherry', 'Date']
+		});
+		expect(team.score).toBe(0);
+	});
 });
