@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { Charades } from './game.svelte.js';
-	import { AudioController } from './audio.svelte.js';
+	import { AudioController } from '../cny/index.js';
 
 	let {
 		game,

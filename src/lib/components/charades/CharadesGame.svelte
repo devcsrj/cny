@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import DrainingTank from './DrainingTank.svelte';
+	import { DrainingTank } from '../cny/index.js';
 	import CharadesWord from './CharadesWord.svelte';
 	import FinishOverlay from './FinishOverlay.svelte';
 	import Leaderboard from './Leaderboard.svelte';
@@ -42,7 +42,7 @@
 <div
 	class="fixed inset-0 flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-background select-none"
 >
-	<DrainingTank {game} />
+	<DrainingTank timeLeft={game.timeLeft} duration={game.duration} />
 	<TimerDisplay {game} />
 	<CharadesWord {game} />
 

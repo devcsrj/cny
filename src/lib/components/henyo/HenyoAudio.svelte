@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Henyo } from './game.svelte.js';
-	import { AudioController } from '../charades/audio.svelte.js';
+	import { AudioController } from '../cny/index.js';
 
 	let {
 		game,

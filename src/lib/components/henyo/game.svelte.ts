@@ -5,7 +5,7 @@ import type {
 	HenyoTeam,
 	HenyoTurn
 } from '$lib/types/henyo';
-import { ReactiveClock } from '../charades/clock.svelte.js';
+import { ReactiveClock } from '../cny/index.js';
 import { HenyoDispatcher } from './dispatcher.svelte.js';
 
 export class Henyo {

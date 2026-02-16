@@ -9,7 +9,7 @@
 	import { Henyo } from './game.svelte.js';
 	import { Settings, Volume2, VolumeX, X } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import DrainingTank from '../charades/DrainingTank.svelte';
+	import { DrainingTank } from '../cny/index.js';
 
 	let { game }: { game: Henyo } = $props();
 
@@ -44,7 +44,7 @@
 	class="fixed inset-0 flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-background select-none"
 >
 	<!-- Background visual reuse from charades if suitable, or a slightly different color -->
-	<DrainingTank game={game as any} />
+	<DrainingTank timeLeft={game.timeLeft} duration={game.duration} />
 
 	<HenyoTimer {game} />
 	<HenyoWord {game} />

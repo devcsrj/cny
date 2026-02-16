@@ -5,7 +5,7 @@ import type {
 	CharadesTeam,
 	CharadesTurn
 } from '$lib/types/charades';
-import { ReactiveClock } from './clock.svelte.js';
+import { ReactiveClock } from '../cny/index.js';
 import { CharadesDispatcher } from './dispatcher.svelte.js';
 
 export class Charades {
