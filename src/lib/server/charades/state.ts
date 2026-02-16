@@ -1,6 +1,6 @@
 import { interpret, type Service } from 'robot3';
 import { Timer } from '../timer';
-import { Team } from './team';
+import { Team } from '../word-game/team';
 import type { CharadesAction, CharadesStateData, CharadesStatus } from '$lib/types/charades';
 import { createCharadesMachine, type CharadesContext } from './machine';
 

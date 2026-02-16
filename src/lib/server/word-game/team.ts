@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { WordPool } from './word-pool';
+import { WordPool } from './pool';
 import type { CharadesSummary } from '$lib/types/charades';
 
 export class Team {

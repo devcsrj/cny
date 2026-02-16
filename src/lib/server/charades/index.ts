@@ -1,4 +1,4 @@
 export * from './instance';
 export * from './state';
-export * from './team';
-export * from './word';
+export * from '../word-game/team';
+export * from '../word-game/word';

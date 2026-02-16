@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { interpret } from 'robot3';
 import { createCharadesMachine, type CharadesContext } from './machine';
-import { Team } from './team';
+import { Team } from '../word-game/team';
 import { Timer } from '../timer';
 
 describe('Charades State Machine', () => {

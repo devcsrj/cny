@@ -8,9 +8,9 @@ import {
 	immediate,
 	type Transition
 } from 'robot3';
-import { Team } from './team';
+import { Team } from '../word-game/team';
 import { Timer } from '../timer';
-import { Turn } from './turn';
+import { Turn } from '../word-game/turn';
 
 export interface CharadesContext {
 	teams: Map<string, Team>;
