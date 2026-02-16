@@ -59,7 +59,7 @@
 		}}
 		onDeleteTeam={(id) => game.send({ type: 'DELETE_TEAM', teamId: id })}
 		onAddTeam={() => game.send({ type: 'ADD_TEAM' })}
-		disabled={game.status !== 'waiting'}
+		disabled={game.status !== 'waiting' && game.status !== 'finished'}
 	/>
 
 	<CharadesGameStage {game} onWordClick={handleWordClick} />
