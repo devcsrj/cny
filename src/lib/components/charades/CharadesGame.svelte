@@ -46,10 +46,6 @@
 	<TimerDisplay {game} />
 	<CharadesWord {game} />
 
-	{#if game.showLeaderboard}
-		<Leaderboard {game} />
-	{/if}
-
 	{#if game.status === 'paused'}
 		<div
 			class="absolute inset-0 z-40 flex animate-in flex-col items-center justify-center bg-black/60 backdrop-blur-xl duration-300 fade-in"
@@ -74,6 +70,10 @@
 		</Button>
 	</div>
 </div>
+
+{#if game.showLeaderboard}
+	<Leaderboard {game} />
+{/if}
 
 {#if showSettings}
 	<div

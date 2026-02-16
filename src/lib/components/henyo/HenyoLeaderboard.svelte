@@ -43,7 +43,7 @@
 </script>
 
 <div
-	class="fixed inset-0 z-[60] flex animate-in flex-col items-center justify-center bg-background/95 p-8 backdrop-blur-xl duration-500 slide-in-from-bottom-10 fade-in"
+	class="fixed inset-0 z-[60] flex animate-in flex-col items-center justify-center bg-background/95 p-8 text-foreground backdrop-blur-xl duration-500 slide-in-from-bottom-10 fade-in"
 >
 	<div class="mb-12 text-center">
 		<h2 class="text-2xl font-black tracking-[0.3em] text-primary uppercase italic opacity-50">
