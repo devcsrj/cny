@@ -8,9 +8,9 @@
 	class="fixed inset-0 z-50 flex animate-in flex-col items-center justify-center overflow-y-auto bg-destructive p-8 text-white duration-300 fade-in zoom-in"
 >
 	<h1
-		class="mb-4 text-center text-6xl font-black tracking-tighter uppercase italic md:text-8xl lg:text-9xl"
+		class="mb-4 text-center text-5xl font-black tracking-tighter uppercase italic md:text-7xl lg:text-8xl"
 	>
-		{game.isWin ? 'Round Complete!' : "Time's Up!"}
+		{game.activeTeam?.name}
 	</h1>
 
 	<div class="mb-12 flex flex-col items-center gap-2">

@@ -7,7 +7,7 @@
 <div
 	class="relative z-10 flex h-full w-full flex-col items-center justify-center p-6 mix-blend-difference"
 >
-	{#if game.activeTeam}
+	{#if game.activeTeam && game.status !== 'playing'}
 		<span class="mb-4 text-2xl font-bold tracking-[0.2em] text-white/60 uppercase">
 			{game.activeTeam.name}
 		</span>

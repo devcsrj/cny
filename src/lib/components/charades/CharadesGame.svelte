@@ -2,7 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import DrainingTank from './DrainingTank.svelte';
 	import CharadesWord from './CharadesWord.svelte';
-	import TimesUpOverlay from './TimesUpOverlay.svelte';
+	import FinishOverlay from './FinishOverlay.svelte';
 	import Leaderboard from './Leaderboard.svelte';
 	import TimerDisplay from './TimerDisplay.svelte';
 	import type { Charades } from './index.js';
@@ -39,5 +39,5 @@
 </div>
 
 {#if game.status === 'finished'}
-	<TimesUpOverlay {game} />
+	<FinishOverlay {game} />
 {/if}
