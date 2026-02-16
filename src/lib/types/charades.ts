@@ -1,4 +1,4 @@
-export type CharadesStatus = 'waiting' | 'playing' | 'paused' | 'finished';
+export type CharadesStatus = 'waiting' | 'starting' | 'playing' | 'paused' | 'finished';
 
 export interface CharadesSummary {
 	score: number;
@@ -33,6 +33,7 @@ export interface CharadesStateData {
 		isRunning: boolean;
 		serverTimestamp: number;
 	};
+	countdown: number | null;
 	currentWord: string | null;
 	previewWord: string | null;
 	activeTurn: CharadesTurn | null;
@@ -50,6 +51,8 @@ export type CharadesAction =
 	| { type: 'DELETE_TEAM'; teamId: string }
 	| { type: 'RESET_TEAM'; teamId: string }
 	| { type: 'SET_DURATION'; durationMs: number }
+	| { type: 'PREPARE' }
+	| { type: 'COUNTDOWN_TICK'; value: number }
 	| { type: 'START' }
 	| { type: 'PAUSE' }
 	| { type: 'RESUME' }

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Check, X, Pause, Play } from '@lucide/svelte';
+	import { Check, X, Pause, Play, Timer } from '@lucide/svelte';
 
 	let {
 		status = 'waiting',
+		countdown = null,
 		canAction = true,
 		onCorrect,
 		onPass,
@@ -12,6 +13,7 @@
 		onNext
 	}: {
 		status: string;
+		countdown?: number | null;
 		canAction?: boolean;
 		onCorrect: () => void;
 		onPass: () => void;
@@ -64,6 +66,16 @@
 		>
 			<Play class="mr-2 h-8 w-8" />
 			RESUME
+		</Button>
+	{:else if status === 'starting'}
+		<Button
+			variant="secondary"
+			size="lg"
+			disabled
+			class="col-span-4 h-20 rounded-2xl text-xl font-bold"
+		>
+			<Timer class="mr-2 h-8 w-8 animate-pulse" />
+			STARTING IN {countdown}...
 		</Button>
 	{:else if status === 'finished'}
 		<Button

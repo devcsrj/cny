@@ -18,6 +18,7 @@ export class Charades {
 	activeTurn = $state<CharadesTurn | null>(null);
 	duration = $state(60); // In seconds
 	showLeaderboard = $state(false);
+	countdown = $state<number | null>(null);
 
 	// --- Modules ---
 	private clock = new ReactiveClock();
@@ -76,6 +77,7 @@ export class Charades {
 		this.activeTurn = data.activeTurn;
 		this.duration = data.timer.totalDuration / 1000;
 		this.showLeaderboard = data.showLeaderboard;
+		this.countdown = data.countdown;
 
 		this.clock.sync(data.timer.remainingTime, data.timer.serverTimestamp, data.timer.isRunning);
 	}

@@ -48,12 +48,13 @@
 		isWin={game.isWin}
 	/>
 
-	{#if game.status === 'waiting'}
+	{#if game.status === 'waiting' || game.status === 'finished'}
 		<div class="mt-auto">
 			<SetupTray
 				duration={game.duration}
+				label="PREPARE ROUND"
 				onSetDuration={(s) => game.send({ type: 'SET_DURATION', durationMs: s * 1000 })}
-				onStart={() => game.send({ type: 'START' })}
+				onStart={() => game.send({ type: 'PREPARE' })}
 				canStart={game.activeTeamId !== null}
 			/>
 		</div>
@@ -61,6 +62,7 @@
 		<div class="mt-auto">
 			<ActionZone
 				status={game.status}
+				countdown={game.countdown}
 				canAction={!!game.word}
 				onCorrect={() =>
 					game.send({

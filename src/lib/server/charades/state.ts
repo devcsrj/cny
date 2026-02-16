@@ -6,6 +6,7 @@ import { createCharadesMachine, type CharadesContext } from './machine';
 
 export class CharadesState {
 	private service: Service<ReturnType<typeof createCharadesMachine>>;
+	private countdownInterval: NodeJS.Timeout | null = null;
 
 	constructor(opts: {
 		onStateChanged?: (state: CharadesStateData) => void;
@@ -22,6 +23,7 @@ export class CharadesState {
 			activeTeamId: null,
 			activeTurn: null,
 			timer,
+			countdown: null,
 			showLeaderboard: false
 		};
 
@@ -39,14 +41,46 @@ export class CharadesState {
 	}
 
 	send(event: CharadesAction) {
+		// Clean up countdowns if we are resetting or moving out of starting
+		if (event.type === 'PREPARE' || event.type === 'RESET' || event.type === 'DELETE_TEAM') {
+			this.stopCountdown();
+		}
+
 		this.service.send(event);
+
+		// Trigger countdown if we transitioned to starting
+		if (this.status === 'starting' && !this.countdownInterval) {
+			this.runCountdownStep(3);
+		}
+	}
+
+	private runCountdownStep(value: number) {
+		this.stopCountdown();
+
+		if (value <= 0) {
+			this.service.send({ type: 'START' });
+			return;
+		}
+
+		this.service.send({ type: 'COUNTDOWN_TICK', value });
+
+		this.countdownInterval = setTimeout(() => {
+			this.runCountdownStep(value - 1);
+		}, 1000);
+	}
+
+	private stopCountdown() {
+		if (this.countdownInterval) {
+			clearTimeout(this.countdownInterval);
+			this.countdownInterval = null;
+		}
 	}
 
 	startTimer() {
 		if (this.status === 'paused') {
 			this.send({ type: 'RESUME' });
 		} else {
-			this.send({ type: 'START' });
+			this.send({ type: 'PREPARE' });
 		}
 	}
 
@@ -120,6 +154,7 @@ export class CharadesState {
 			activeTeamId: ctx.activeTeamId,
 			status: this.status,
 			timer: ctx.timer.state,
+			countdown: ctx.countdown,
 			currentWord: currentTeam?.currentWord?.text ?? null,
 			previewWord: currentTeam?.previewWord?.text ?? null,
 			activeTurn: ctx.activeTurn?.getData() ?? null,

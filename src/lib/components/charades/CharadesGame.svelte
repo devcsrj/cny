@@ -6,6 +6,7 @@
 	import Leaderboard from './Leaderboard.svelte';
 	import TimerDisplay from './TimerDisplay.svelte';
 	import CharadesAudio from './CharadesAudio.svelte';
+	import CharadesCountdown from './CharadesCountdown.svelte';
 	import { Charades } from './game.svelte.js';
 	import { Settings, Volume2, VolumeX, X } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -45,6 +46,7 @@
 	<DrainingTank timeLeft={game.timeLeft} duration={game.duration} />
 	<TimerDisplay {game} />
 	<CharadesWord {game} />
+	<CharadesCountdown {game} />
 
 	{#if game.status === 'paused'}
 		<div

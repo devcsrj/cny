@@ -16,6 +16,7 @@ describe('Charades State Machine', () => {
 			activeTeamId: null,
 			activeTurn: null,
 			timer,
+			countdown: null,
 			showLeaderboard: false
 		};
 		machine = createCharadesMachine(initialContext);
@@ -45,24 +46,37 @@ describe('Charades State Machine', () => {
 		expect(service.context.activeTeamId).toBe(teamId);
 	});
 
-	it('should transition to playing when START is sent with an active team', () => {
+	it('should transition to starting when PREPARE is sent with an active team', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.send({ type: 'SELECT_TEAM', teamId });
+
+		service.send({ type: 'PREPARE' });
+		expect(service.machine.current).toBe('starting');
+		expect(service.context.countdown).toBe(3);
+	});
+
+	it('should transition to playing when START is sent from starting state', () => {
 		const service = interpret(machine, () => {});
 		service.send('ADD_TEAM');
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.context.teams.get(teamId)!.words = ['Apple'];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 
 		service.send({ type: 'START' });
 		expect(service.machine.current).toBe('playing');
 		expect(service.context.activeTurn).not.toBeNull();
 		expect(service.context.timer.state.isRunning).toBe(true);
+		expect(service.context.countdown).toBeNull();
 	});
 
-	it('should NOT transition to playing when START is sent without an active team', () => {
+	it('should NOT transition to starting when PREPARE is sent without an active team', () => {
 		const service = interpret(machine, () => {});
 		service.send('ADD_TEAM');
 
-		service.send({ type: 'START' });
+		service.send({ type: 'PREPARE' });
 		expect(service.machine.current).toBe('waiting');
 	});
 
@@ -74,6 +88,7 @@ describe('Charades State Machine', () => {
 		team.words = ['Apple', 'Banana'];
 
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 
 		const currentWord = team.currentWord?.text;
@@ -92,6 +107,7 @@ describe('Charades State Machine', () => {
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.context.teams.get(teamId)!.words = ['Apple'];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 
 		service.send({ type: 'PAUSE' });
@@ -108,6 +124,7 @@ describe('Charades State Machine', () => {
 		service.send('ADD_TEAM');
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 
 		service.send({ type: 'TIME_UP' });
@@ -122,6 +139,7 @@ describe('Charades State Machine', () => {
 		team.words = ['Apple'];
 
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 
 		service.send({ type: 'MARK_CORRECT', teamId, word: 'Apple' });
@@ -135,12 +153,14 @@ describe('Charades State Machine', () => {
 		service.send('ADD_TEAM');
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 		service.send({ type: 'TIME_UP' });
 
 		service.send({ type: 'RESET' });
 		expect(service.machine.current).toBe('waiting');
 		expect(service.context.activeTurn).toBeNull();
+		expect(service.context.countdown).toBeNull();
 	});
 
 	it('should handle TOGGLE_LEADERBOARD in waiting, paused, and finished states', () => {
@@ -157,6 +177,7 @@ describe('Charades State Machine', () => {
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.context.teams.get(teamId)!.words = ['Apple'];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 		service.send({ type: 'PAUSE' });
 		expect(service.machine.current).toBe('paused');
@@ -177,6 +198,7 @@ describe('Charades State Machine', () => {
 		const teamId = Array.from(service.context.teams.keys())[0];
 		service.context.teams.get(teamId)!.words = ['Apple'];
 		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
 		service.send({ type: 'START' });
 		expect(service.machine.current).toBe('playing');
 

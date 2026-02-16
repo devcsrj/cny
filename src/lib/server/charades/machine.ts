@@ -17,6 +17,7 @@ export interface CharadesContext {
 	activeTeamId: string | null;
 	activeTurn: Turn | null;
 	timer: Timer;
+	countdown: number | null;
 	showLeaderboard: boolean;
 }
 
@@ -64,11 +65,22 @@ const resetTeam = reduce<CharadesContext, { type: 'RESET_TEAM'; teamId: string }
 	return { ...ctx, activeTurn };
 });
 
+const prepareTurn = reduce<CharadesContext, { type: 'PREPARE' }>((ctx) => {
+	ctx.timer.reset();
+	return { ...ctx, countdown: 3 };
+});
+
+const countdownTick = reduce<CharadesContext, { type: 'COUNTDOWN_TICK'; value: number }>(
+	(ctx, ev) => {
+		return { ...ctx, countdown: ev.value };
+	}
+);
+
 const startTurn = reduce<CharadesContext, { type: 'START' }>((ctx) => {
 	if (!ctx.activeTeamId) return ctx;
 	const activeTurn = new Turn(ctx.activeTeamId);
 	ctx.timer.start();
-	return { ...ctx, activeTurn };
+	return { ...ctx, activeTurn, countdown: null };
 });
 
 const pauseTimer = action<CharadesContext, { type: 'PAUSE' }>((ctx) => {
@@ -111,7 +123,8 @@ const resetGame = reduce<CharadesContext, { type: 'RESET'; durationMs?: number }
 	ctx.timer.reset(ev.durationMs);
 	return {
 		...ctx,
-		activeTurn: null
+		activeTurn: null,
+		countdown: null
 	};
 });
 
@@ -156,7 +169,13 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 		{
 			waiting: state<Transition<string>>(
 				...adminTransitions('waiting'),
-				transition('START', 'playing', guard(hasActiveTeam), startTurn)
+				transition('PREPARE', 'starting', guard(hasActiveTeam), prepareTurn)
+			),
+			starting: state<Transition<string>>(
+				...adminTransitions('starting'),
+				transition('COUNTDOWN_TICK', 'starting', countdownTick),
+				transition('START', 'playing', startTurn),
+				transition('RESET', 'waiting', resetGame)
 			),
 			playing: state(
 				immediate(
@@ -191,7 +210,7 @@ export const createCharadesMachine = (initialCtx: CharadesContext) => {
 			finished: state<Transition<string>>(
 				...adminTransitions('finished'),
 				transition('RESET', 'waiting', resetGame),
-				transition('START', 'playing', guard(hasActiveTeam), startTurn)
+				transition('PREPARE', 'starting', guard(hasActiveTeam), prepareTurn)
 			)
 		},
 		() => initialCtx
