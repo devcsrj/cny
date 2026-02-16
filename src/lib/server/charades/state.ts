@@ -1,119 +1,112 @@
+import { interpret, type Service } from 'robot3';
 import { Timer } from '../timer';
 import { Team } from './team';
-import { Word } from './word';
-import { Turn } from './turn';
 import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
+import { createCharadesMachine, type CharadesContext, type CharadesEvent } from './machine';
 
 export class CharadesState {
-	private readonly teams = new Map<string, Team>();
-	private activeTeamId: string | null = null;
-	private _status: CharadesStatus = 'waiting';
-	private activeTurn: Turn | null = null;
-
-	private readonly _timer: Timer;
+	private service: Service<ReturnType<typeof createCharadesMachine>>;
 
 	constructor(onExpired?: () => void) {
-		this._timer = new Timer(60000, () => {
-			this._status = 'finished';
+		const timer = new Timer(60000, () => {
+			this.service.send('TIME_UP');
 			if (onExpired) onExpired();
+		});
+
+		const initialContext: CharadesContext = {
+			teams: new Map<string, Team>(),
+			activeTeamId: null,
+			activeTurn: null,
+			timer
+		};
+
+		const machine = createCharadesMachine(initialContext);
+		this.service = interpret(machine, () => {
+			// onChange
 		});
 	}
 
 	get timer() {
-		return this._timer;
+		return this.service.context.timer;
 	}
 
-	get status() {
-		return this._status;
+	get status(): CharadesStatus {
+		return this.service.machine.current as CharadesStatus;
+	}
+
+	send(event: CharadesEvent) {
+		this.service.send(event);
 	}
 
 	startTimer() {
-		if (this._status === 'waiting' && this.activeTeamId) {
-			this.activeTurn = new Turn(this.activeTeamId);
-		}
-		this._timer.start();
-		this._status = 'playing';
+		this.send({ type: 'START' });
 	}
 
 	pauseTimer() {
-		this._timer.pause();
-		this._status = 'paused';
+		this.send({ type: 'PAUSE' });
+	}
+
+	finishRound() {
+		this.send({ type: 'FINISH' });
 	}
 
 	resetTimer(durationMs?: number) {
-		this._timer.reset(durationMs);
-		this._status = 'waiting';
-		this.activeTurn = null;
+		this.send({ type: 'RESET', durationMs });
 	}
 
 	setCurrentTeam(id: Team['id']) {
-		if (this.teams.has(id)) {
-			this.activeTeamId = id;
-		}
+		this.send({ type: 'SELECT_TEAM', teamId: id });
 	}
 
 	getCurrentTeam(): Team | undefined {
-		return this.activeTeamId ? this.teams.get(this.activeTeamId) : undefined;
+		const ctx = this.service.context;
+		return ctx.activeTeamId ? ctx.teams.get(ctx.activeTeamId) : undefined;
 	}
 
 	resetTeam(id: Team['id']) {
-		this.teams.get(id)?.reset();
-		if (this.activeTeamId === id) {
-			this.activeTurn = null;
-		}
+		this.send({ type: 'RESET_TEAM', id });
 	}
 
 	nextWord() {
-		this.getCurrentTeam()?.nextWord();
+		const team = this.getCurrentTeam();
+		if (team) {
+			team.nextWord();
+		}
 	}
 
-	getCurrentWord(): Word | null {
+	getCurrentWord() {
 		return this.getCurrentTeam()?.currentWord ?? null;
 	}
 
 	addTeam(): Team {
-		const team = new Team();
-		this.teams.set(team.id, team);
-		return team;
+		const ctx = this.service.context;
+		const oldTeams = new Set(ctx.teams.keys());
+		this.send({ type: 'ADD_TEAM' });
+		const newTeams = this.service.context.teams;
+		const addedId = Array.from(newTeams.keys()).find((id) => !oldTeams.has(id));
+		return newTeams.get(addedId!)!;
 	}
 
 	updateTeam(id: Team['id'], opts: { name?: string; words?: string[] }) {
-		const team = this.teams.get(id);
-		if (!team) return;
-
-		if (opts.name) team.name = opts.name;
-		if (opts.words) {
-			team.words = opts.words;
-		}
+		this.send({ type: 'UPDATE_TEAM', id, ...opts });
 	}
 
 	deleteTeam(id: Team['id']) {
-		this.teams.delete(id);
-		if (this.activeTeamId === id) {
-			this.activeTeamId = null;
-			this.activeTurn = null;
-		}
+		this.send({ type: 'DELETE_TEAM', id });
 	}
 
 	markCorrect(teamId: Team['id'], word: string) {
-		const current = this.getCurrentWord();
-		if (!current || current.text !== word) return;
-
-		this.teams.get(teamId)?.guessed(word);
-		this.activeTurn?.recordCorrect(word);
+		this.send({ type: 'MARK_CORRECT', teamId, word });
 	}
 
 	markMissed(teamId: Team['id'], word: string) {
-		const current = this.getCurrentWord();
-		if (!current || current.text !== word) return;
-
-		this.teams.get(teamId)?.missed(word);
-		this.activeTurn?.recordMissed(word);
+		this.send({ type: 'MARK_MISSED', teamId, word });
 	}
 
 	getState(): CharadesStateData {
+		const ctx = this.service.context;
 		return {
-			teams: Array.from(this.teams.values()).map((t) => ({
+			teams: Array.from(ctx.teams.values()).map((t) => ({
 				id: t.id,
 				name: t.name,
 				score: t.score,
@@ -121,11 +114,11 @@ export class CharadesState {
 				guessedWords: t.guessedWords,
 				currentWordIndex: t.currentWordIndex
 			})),
-			activeTeamId: this.activeTeamId,
-			status: this._status,
-			timer: this._timer.state,
+			activeTeamId: ctx.activeTeamId,
+			status: this.status,
+			timer: ctx.timer.state,
 			currentWord: this.getCurrentWord()?.text ?? null,
-			activeTurn: this.activeTurn?.getData() ?? null
+			activeTurn: ctx.activeTurn?.getData() ?? null
 		};
 	}
 }

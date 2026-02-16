@@ -119,6 +119,14 @@ export class CharadesGM {
 		this.dispatch({ type: 'START_TIMER' });
 	}
 
+	pause() {
+		this.dispatch({ type: 'PAUSE_TIMER' });
+	}
+
+	resume() {
+		this.dispatch({ type: 'START_TIMER' });
+	}
+
 	handleCorrect() {
 		if (!this.activeTeamId || !this.game.word) return;
 		this.dispatch({

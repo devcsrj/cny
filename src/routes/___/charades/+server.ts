@@ -54,20 +54,35 @@ export const POST: RequestHandler = async ({ request }) => {
 			break;
 		case 'MARK_CORRECT':
 			c.markCorrect(body.team.id, body.word);
-			c.nextWord();
-			sendCurrentWord();
-			broadcastSync();
+			if (c.status === 'finished') {
+				sendFinish();
+			} else {
+				sendCurrentWord();
+				broadcastSync();
+			}
 			break;
 		case 'MARK_MISSED':
 			c.markMissed(body.team.id, body.word);
-			c.nextWord();
-			sendCurrentWord();
-			broadcastSync();
+			if (c.status === 'finished') {
+				sendFinish();
+			} else {
+				sendCurrentWord();
+				broadcastSync();
+			}
 			break;
 	}
 
 	return text('OK');
 };
+
+function sendFinish() {
+	const currentTeam = CHARADES.getCurrentTeam();
+	GAME_MASTER.emit('charades:command', {
+		type: 'FINISH',
+		summary: currentTeam?.summary
+	});
+	broadcastSync();
+}
 
 function sendDuration() {
 	const t = CHARADES.timer.state;

@@ -57,8 +57,8 @@
 				canAction={!!gm.game.word}
 				onCorrect={() => gm.handleCorrect()}
 				onPass={() => gm.handleMiss()}
-				onPause={() => gm.game.pause()}
-				onResume={() => gm.game.start()}
+				onPause={() => gm.pause()}
+				onResume={() => gm.resume()}
 				onNext={() => gm.prepareNextRound()}
 			/>
 		</div>
