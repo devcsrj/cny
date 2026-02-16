@@ -1,8 +1,8 @@
-import type { CharadesCommand } from '$lib/types/charades';
+import type { CharadesMessage } from '$lib/types/charades';
 import { EventEmitter } from 'node:events';
 
 interface EventMap {
-	'charades:command': (cmd: CharadesCommand) => void;
+	'charades:command': (cmd: CharadesMessage) => void;
 }
 
 export class TypedEventBus {

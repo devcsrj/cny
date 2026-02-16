@@ -36,31 +36,29 @@ export interface CharadesStateData {
 	activeTurn: CharadesTurn | null;
 }
 
-export type CharadesCommand =
-	| { type: 'SET_WORD'; word: string; index?: number }
-	| {
-			type: 'SET_DURATION';
-			duration: number;
-			remainingTime: number;
-			isRunning: boolean;
-			serverTimestamp: number;
-			status: CharadesStatus;
-	  }
-	| { type: 'START' }
-	| { type: 'PAUSE' }
-	| { type: 'RESET' }
-	| { type: 'FINISH'; summary?: Partial<CharadesSummary> }
-	| { type: 'SYNC_STATE'; state: CharadesStateData };
-
-export type CharadesGmCommand =
-	| { type: 'SET_DURATION'; seconds: number }
-	| { type: 'START_TIMER' }
-	| { type: 'PAUSE_TIMER' }
-	| { type: 'RESET_TIMER' }
+/**
+ * Inbound actions that drive the state machine and game logic.
+ * These are typically sent by the GM or triggered by internal timers.
+ */
+export type CharadesAction =
 	| { type: 'ADD_TEAM' }
 	| { type: 'SELECT_TEAM'; teamId: string }
-	| { type: 'UPDATE_TEAM'; team: { id: string; name: string; words: string[] } }
-	| { type: 'DELETE_TEAM'; team: { id: string } }
-	| { type: 'RESET_TEAM'; team: { id: string } }
-	| { type: 'MARK_CORRECT'; team: { id: string }; word: string }
-	| { type: 'MARK_MISSED'; team: { id: string }; word: string };
+	| { type: 'UPDATE_TEAM'; id: string; name?: string; words?: string[] }
+	| { type: 'DELETE_TEAM'; id: string }
+	| { type: 'RESET_TEAM'; id: string }
+	| { type: 'SET_DURATION'; durationMs: number }
+	| { type: 'START' }
+	| { type: 'PAUSE' }
+	| { type: 'RESUME' }
+	| { type: 'RESET'; durationMs?: number }
+	| { type: 'MARK_CORRECT'; teamId: string; word: string }
+	| { type: 'MARK_MISSED'; teamId: string; word: string }
+	| { type: 'TIME_UP' }
+	| { type: 'FINISH' };
+
+/**
+ * Outbound messages sent to all clients (Display and GM) via SSE.
+ */
+export type CharadesMessage =
+	| { type: 'SYNC_STATE'; state: CharadesStateData }
+	| { type: 'FINISH'; summary?: CharadesSummary };

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import CharadesGMController from '$lib/components/charades-gm/CharadesGMController.svelte';
 	import { CharadesGM } from '$lib/components/charades-gm/gm.svelte.js';
-	import type { CharadesCommand } from '$lib/types/charades';
+	import type { CharadesMessage } from '$lib/types/charades';
 
 	const gm = new CharadesGM();
 
@@ -22,7 +22,7 @@
 		const path = `/api/charades/subscribe`;
 		const es = new EventSource(path);
 		es.addEventListener('message', (e) => {
-			const payload = JSON.parse(e.data) as CharadesCommand;
+			const payload = JSON.parse(e.data) as CharadesMessage;
 			gm.applyCommand(payload);
 		});
 

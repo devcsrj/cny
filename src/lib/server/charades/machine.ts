@@ -19,22 +19,6 @@ export interface CharadesContext {
 	timer: Timer;
 }
 
-export type CharadesEvent =
-	| { type: 'ADD_TEAM' }
-	| { type: 'SELECT_TEAM'; teamId: string }
-	| { type: 'UPDATE_TEAM'; id: string; name?: string; words?: string[] }
-	| { type: 'DELETE_TEAM'; id: string }
-	| { type: 'RESET_TEAM'; id: string }
-	| { type: 'SET_DURATION'; durationMs: number }
-	| { type: 'START' }
-	| { type: 'PAUSE' }
-	| { type: 'MARK_CORRECT'; teamId: string; word: string }
-	| { type: 'MARK_MISSED'; teamId: string; word: string }
-	| { type: 'TIME_UP' }
-	| { type: 'FINISH' }
-	| { type: 'RESUME' }
-	| { type: 'RESET'; durationMs?: number };
-
 // Actions & Reducers
 const addTeam = reduce<CharadesContext, { type: 'ADD_TEAM' }>((ctx) => {
 	const team = new Team();

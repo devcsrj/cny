@@ -1,8 +1,8 @@
 import { interpret, type Service } from 'robot3';
 import { Timer } from '../timer';
 import { Team } from './team';
-import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
-import { createCharadesMachine, type CharadesContext, type CharadesEvent } from './machine';
+import type { CharadesAction, CharadesStateData, CharadesStatus } from '$lib/types/charades';
+import { createCharadesMachine, type CharadesContext } from './machine';
 
 export class CharadesState {
 	private service: Service<ReturnType<typeof createCharadesMachine>>;
@@ -13,7 +13,7 @@ export class CharadesState {
 	}) {
 		const onExpired = opts.onExpired || (() => {});
 		const timer = new Timer(60000, () => {
-			this.service.send('TIME_UP');
+			this.service.send({ type: 'TIME_UP' });
 			onExpired();
 		});
 
@@ -37,7 +37,7 @@ export class CharadesState {
 		return this.service.machine.current as CharadesStatus;
 	}
 
-	send(event: CharadesEvent) {
+	send(event: CharadesAction) {
 		this.service.send(event);
 	}
 
