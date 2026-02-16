@@ -1,0 +1,144 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { interpret } from 'robot3';
+import { createCharadesMachine, type CharadesContext } from './machine';
+import { Team } from './team';
+import { Timer } from '../timer';
+
+describe('Charades State Machine', () => {
+	let machine: ReturnType<typeof createCharadesMachine>;
+	let initialContext: CharadesContext;
+	let timer: Timer;
+
+	beforeEach(() => {
+		timer = new Timer(60000, () => {});
+		initialContext = {
+			teams: new Map<string, Team>(),
+			activeTeamId: null,
+			activeTurn: null,
+			timer
+		};
+		machine = createCharadesMachine(initialContext);
+	});
+
+	it('should start in the waiting state', () => {
+		const service = interpret(machine, () => {});
+		expect(service.machine.current).toBe('waiting');
+	});
+
+	it('should handle ADD_TEAM', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+
+		const ctx = service.context;
+		expect(ctx.teams.size).toBe(1);
+		const team = Array.from(ctx.teams.values())[0];
+		expect(team.name).toBe('New Team');
+	});
+
+	it('should handle SELECT_TEAM', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+
+		service.send({ type: 'SELECT_TEAM', teamId });
+		expect(service.context.activeTeamId).toBe(teamId);
+	});
+
+	it('should transition to playing when START is sent with an active team', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.context.teams.get(teamId)!.words = ['Apple'];
+		service.send({ type: 'SELECT_TEAM', teamId });
+
+		service.send({ type: 'START' });
+		expect(service.machine.current).toBe('playing');
+		expect(service.context.activeTurn).not.toBeNull();
+		expect(service.context.timer.state.isRunning).toBe(true);
+	});
+
+	it('should NOT transition to playing when START is sent without an active team', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+
+		service.send({ type: 'START' });
+		expect(service.machine.current).toBe('waiting');
+	});
+
+	it('should handle MARK_CORRECT in playing state', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		const team = service.context.teams.get(teamId)!;
+		team.words = ['Apple', 'Banana'];
+
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+
+		const currentWord = team.currentWord?.text;
+		expect(currentWord).toBeDefined();
+
+		service.send({ type: 'MARK_CORRECT', teamId, word: currentWord! });
+
+		expect(team.score).toBe(1);
+		expect(service.context.activeTurn?.score).toBe(1);
+		expect(team.currentWord?.text).not.toBe(currentWord);
+	});
+
+	it('should transition to paused and back to playing', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.context.teams.get(teamId)!.words = ['Apple'];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+
+		service.send({ type: 'PAUSE' });
+		expect(service.machine.current).toBe('paused');
+		expect(service.context.timer.state.isRunning).toBe(false);
+
+		service.send({ type: 'RESUME' });
+		expect(service.machine.current).toBe('playing');
+		expect(service.context.timer.state.isRunning).toBe(true);
+	});
+
+	it('should transition to finished when TIME_UP is sent', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+
+		service.send({ type: 'TIME_UP' });
+		expect(service.machine.current).toBe('finished');
+	});
+
+	it('should transition to finished immediately when pool is exhausted', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		const team = service.context.teams.get(teamId)!;
+		team.words = ['Apple'];
+
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+
+		service.send({ type: 'MARK_CORRECT', teamId, word: 'Apple' });
+
+		expect(service.machine.current).toBe('finished');
+		expect(service.context.timer.state.isRunning).toBe(false);
+	});
+
+	it('should reset game state when RESET is sent in finished state', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+		service.send({ type: 'TIME_UP' });
+
+		service.send({ type: 'RESET' });
+		expect(service.machine.current).toBe('waiting');
+		expect(service.context.activeTurn).toBeNull();
+	});
+});
