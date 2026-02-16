@@ -21,7 +21,8 @@ export class CharadesState {
 			teams: new Map<string, Team>(),
 			activeTeamId: null,
 			activeTurn: null,
-			timer
+			timer,
+			showLeaderboard: false
 		};
 
 		const machine = createCharadesMachine(initialContext);
@@ -120,7 +121,8 @@ export class CharadesState {
 			timer: ctx.timer.state,
 			currentWord: currentTeam?.currentWord?.text ?? null,
 			previewWord: currentTeam?.previewWord?.text ?? null,
-			activeTurn: ctx.activeTurn?.getData() ?? null
+			activeTurn: ctx.activeTurn?.getData() ?? null,
+			showLeaderboard: ctx.showLeaderboard
 		};
 	}
 }

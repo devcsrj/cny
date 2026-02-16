@@ -15,7 +15,8 @@ describe('Charades State Machine', () => {
 			teams: new Map<string, Team>(),
 			activeTeamId: null,
 			activeTurn: null,
-			timer
+			timer,
+			showLeaderboard: false
 		};
 		machine = createCharadesMachine(initialContext);
 	});
@@ -140,5 +141,47 @@ describe('Charades State Machine', () => {
 		service.send({ type: 'RESET' });
 		expect(service.machine.current).toBe('waiting');
 		expect(service.context.activeTurn).toBeNull();
+	});
+
+	it('should handle TOGGLE_LEADERBOARD in waiting, paused, and finished states', () => {
+		const service = interpret(machine, () => {});
+
+		// Waiting state
+		service.send('TOGGLE_LEADERBOARD');
+		expect(service.context.showLeaderboard).toBe(true);
+		service.send('TOGGLE_LEADERBOARD');
+		expect(service.context.showLeaderboard).toBe(false);
+
+		// Paused state
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.context.teams.get(teamId)!.words = ['Apple'];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+		service.send({ type: 'PAUSE' });
+		expect(service.machine.current).toBe('paused');
+
+		service.send('TOGGLE_LEADERBOARD');
+		expect(service.context.showLeaderboard).toBe(true);
+
+		// Finished state
+		service.send({ type: 'FINISH' });
+		expect(service.machine.current).toBe('finished');
+		service.send('TOGGLE_LEADERBOARD');
+		expect(service.context.showLeaderboard).toBe(false);
+	});
+
+	it('should NOT allow TOGGLE_LEADERBOARD in playing state', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		service.context.teams.get(teamId)!.words = ['Apple'];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'START' });
+		expect(service.machine.current).toBe('playing');
+
+		const initialStatus = service.context.showLeaderboard;
+		service.send('TOGGLE_LEADERBOARD');
+		expect(service.context.showLeaderboard).toBe(initialStatus);
 	});
 });

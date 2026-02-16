@@ -15,6 +15,7 @@ export class Charades {
 	previewWord = $state('');
 	activeTurn = $state<CharadesTurn | null>(null);
 	duration = $state(60); // In seconds
+	showLeaderboard = $state(false);
 
 	private clock = new ReactiveClock();
 	timeLeft = $derived(this.clock.timeLeft);
@@ -39,6 +40,7 @@ export class Charades {
 		this.previewWord = data.previewWord ?? '';
 		this.activeTurn = data.activeTurn;
 		this.duration = data.timer.totalDuration / 1000;
+		this.showLeaderboard = data.showLeaderboard;
 		this.clock.sync(data.timer.remainingTime, data.timer.serverTimestamp, data.timer.isRunning);
 	}
 

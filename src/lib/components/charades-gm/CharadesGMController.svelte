@@ -21,7 +21,13 @@
 <div
 	class="mx-auto flex h-screen max-w-md flex-col overflow-hidden border-x bg-background text-foreground"
 >
-	<GMHeader status={game.status} timeLeft={game.timeLeft} onReset={handleReset} />
+	<GMHeader
+		status={game.status}
+		timeLeft={game.timeLeft}
+		showLeaderboard={game.showLeaderboard}
+		onReset={handleReset}
+		onToggleLeaderboard={() => game.send({ type: 'TOGGLE_LEADERBOARD' })}
+	/>
 
 	<TeamDashboard
 		teams={game.teams}

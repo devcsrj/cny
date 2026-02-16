@@ -3,6 +3,7 @@
 	import DrainingTank from './DrainingTank.svelte';
 	import CharadesWord from './CharadesWord.svelte';
 	import TimesUpOverlay from './TimesUpOverlay.svelte';
+	import Leaderboard from './Leaderboard.svelte';
 	import TimerDisplay from './TimerDisplay.svelte';
 	import type { Charades } from './index.js';
 
@@ -19,6 +20,10 @@
 	<DrainingTank {game} />
 	<TimerDisplay {game} />
 	<CharadesWord {game} />
+
+	{#if game.showLeaderboard}
+		<Leaderboard {game} />
+	{/if}
 
 	{#if game.status === 'paused'}
 		<div

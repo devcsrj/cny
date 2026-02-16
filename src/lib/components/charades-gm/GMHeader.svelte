@@ -1,17 +1,21 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { RotateCcw } from '@lucide/svelte';
+	import { RotateCcw, Trophy } from '@lucide/svelte';
 	import type { CharadesStatus } from '$lib/types/charades';
 
 	let {
 		status = 'waiting',
 		timeLeft = 60,
-		onReset
+		showLeaderboard = false,
+		onReset,
+		onToggleLeaderboard
 	}: {
 		status: CharadesStatus;
 		timeLeft: number;
+		showLeaderboard?: boolean;
 		onReset: () => void;
+		onToggleLeaderboard: () => void;
 	} = $props();
 
 	const statusColor: Record<CharadesStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -39,7 +43,20 @@
 		{/if}
 	</div>
 
-	<Button variant="ghost" size="icon" onclick={onReset} aria-label="Reset Game">
-		<RotateCcw class="h-5 w-5" />
-	</Button>
+	<div class="flex items-center gap-1">
+		<Button
+			variant={showLeaderboard ? 'default' : 'ghost'}
+			size="icon"
+			onclick={onToggleLeaderboard}
+			disabled={status === 'playing'}
+			aria-label="Toggle Leaderboard"
+			class={showLeaderboard ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+		>
+			<Trophy class="h-5 w-5" />
+		</Button>
+
+		<Button variant="ghost" size="icon" onclick={onReset} aria-label="Reset Game">
+			<RotateCcw class="h-5 w-5" />
+		</Button>
+	</div>
 </header>

@@ -35,6 +35,7 @@ export interface CharadesStateData {
 	currentWord: string | null;
 	previewWord: string | null;
 	activeTurn: CharadesTurn | null;
+	showLeaderboard: boolean;
 }
 
 /**
@@ -55,7 +56,8 @@ export type CharadesAction =
 	| { type: 'MARK_CORRECT'; teamId: string; word: string }
 	| { type: 'MARK_MISSED'; teamId: string; word: string }
 	| { type: 'TIME_UP' }
-	| { type: 'FINISH' };
+	| { type: 'FINISH' }
+	| { type: 'TOGGLE_LEADERBOARD' };
 
 /**
  * Outbound messages sent to all clients (Display and GM) via SSE.

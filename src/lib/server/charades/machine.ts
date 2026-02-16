@@ -17,6 +17,7 @@ export interface CharadesContext {
 	activeTeamId: string | null;
 	activeTurn: Turn | null;
 	timer: Timer;
+	showLeaderboard: boolean;
 }
 
 // Actions & Reducers
@@ -120,6 +121,10 @@ const setDuration = action<CharadesContext, { type: 'SET_DURATION'; durationMs: 
 	}
 );
 
+const toggleLeaderboard = reduce<CharadesContext, { type: 'TOGGLE_LEADERBOARD' }>((ctx) => {
+	return { ...ctx, showLeaderboard: !ctx.showLeaderboard };
+});
+
 // Guards
 const hasActiveTeam = (ctx: CharadesContext) => ctx.activeTeamId !== null;
 const isPoolExhausted = (ctx: CharadesContext) => {
@@ -134,7 +139,8 @@ const adminTransitions = (to: string) => [
 	transition('UPDATE_TEAM', to, updateTeam),
 	transition('DELETE_TEAM', to, deleteTeam),
 	transition('RESET_TEAM', to, resetTeam),
-	transition('SET_DURATION', to, setDuration)
+	transition('SET_DURATION', to, setDuration),
+	transition('TOGGLE_LEADERBOARD', to, toggleLeaderboard)
 ];
 
 export const createCharadesMachine = (initialCtx: CharadesContext) => {
