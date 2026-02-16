@@ -31,7 +31,9 @@ export class HenyoState {
 		this.service = interpret(machine, () => {
 			// Sync teamTimeTaken to context if we just finished
 			if (this.status === 'finished' && this.service.context.activeTeamId) {
-				this.teamTimeTaken.set(this.service.context.activeTeamId, this.service.context.timeTakenMs);
+				const teamId = this.service.context.activeTeamId;
+				const currentTotal = this.teamTimeTaken.get(teamId) || 0;
+				this.teamTimeTaken.set(teamId, currentTotal + this.service.context.timeTakenMs);
 			}
 			onStateChanged(this.getData());
 		});

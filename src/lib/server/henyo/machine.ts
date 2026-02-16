@@ -68,6 +68,7 @@ const resetTeam = reduce<HenyoContext, { type: 'RESET_TEAM'; teamId: string }>((
 });
 
 const prepareTurn = reduce<HenyoContext, { type: 'PREPARE' }>((ctx) => {
+	ctx.timer.reset();
 	return { ...ctx, countdown: 3 };
 });
 
@@ -77,6 +78,10 @@ const countdownTick = reduce<HenyoContext, { type: 'COUNTDOWN_TICK'; value: numb
 
 const startTurn = reduce<HenyoContext, { type: 'START' }>((ctx) => {
 	if (!ctx.activeTeamId) return ctx;
+	const team = ctx.teams.get(ctx.activeTeamId);
+	if (team) {
+		team.hasPlayed = false;
+	}
 	const activeTurn = new Turn(ctx.activeTeamId);
 	ctx.timer.start();
 	return { ...ctx, activeTurn, countdown: null };

@@ -101,4 +101,36 @@ describe('Henyo State Machine', () => {
 
 		expect(service.context.timeTakenMs).toBeGreaterThanOrEqual(100);
 	});
+
+	it('should allow starting round again for a team that has played', () => {
+		const service = interpret(machine, () => {});
+		service.send('ADD_TEAM');
+		const teamId = Array.from(service.context.teams.keys())[0];
+		const team = service.context.teams.get(teamId)!;
+		team.words = ['Apple'];
+		service.send({ type: 'SELECT_TEAM', teamId });
+		service.send({ type: 'PREPARE' });
+		service.send({ type: 'START' });
+
+		// Mark word as correct
+		service.send({ type: 'MARK_CORRECT', teamId, word: 'Apple' });
+
+		expect(service.machine.current).toBe('finished');
+		expect(team.hasPlayed).toBe(true);
+		expect(team.score).toBe(1);
+
+		// GM adds more words
+		team.words = ['Apple', 'Banana']; // Apple is already guessed
+
+		// Start again
+		service.send({ type: 'PREPARE' });
+		expect(service.machine.current).toBe('starting');
+		expect(service.context.timer.state.remainingTime).toBe(120000); // Reset to full duration
+
+		service.send({ type: 'START' });
+		expect(service.machine.current).toBe('playing');
+		expect(team.hasPlayed).toBe(false); // Reset during round
+		expect(team.score).toBe(1); // Score preserved
+		expect(team.currentWord?.text).toBe('Banana'); // Skips Apple
+	});
 });
