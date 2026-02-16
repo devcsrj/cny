@@ -1,8 +1,10 @@
 import type { CharadesMessage } from '$lib/types/charades';
+import type { HenyoMessage } from '$lib/types/henyo';
 import { EventEmitter } from 'node:events';
 
 interface EventMap {
 	'charades:command': (cmd: CharadesMessage) => void;
+	'henyo:command': (cmd: HenyoMessage) => void;
 }
 
 export class TypedEventBus {
