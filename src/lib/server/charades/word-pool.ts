@@ -52,6 +52,15 @@ export class WordPool {
 		}
 	}
 
+	peekNext(): Word | null {
+		if (this._words.length === 0) return null;
+		const nextIndex = this.findNextAvailableIndex(this._currentIndex);
+		if (nextIndex !== -1) {
+			return this._words[nextIndex];
+		}
+		return null;
+	}
+
 	markGuessed(text: string) {
 		const word = this._words.find((w) => w.is(text));
 		if (word) {

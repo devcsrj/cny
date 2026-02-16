@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Charades } from './charades.svelte.js';
+	import type { Charades } from './index.js';
 
 	let { game }: { game: Charades } = $props();
 </script>

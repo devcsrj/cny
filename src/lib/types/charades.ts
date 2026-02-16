@@ -33,6 +33,7 @@ export interface CharadesStateData {
 		serverTimestamp: number;
 	};
 	currentWord: string | null;
+	previewWord: string | null;
 	activeTurn: CharadesTurn | null;
 }
 

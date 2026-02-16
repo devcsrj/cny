@@ -27,6 +27,10 @@ export class Team {
 		return this.pool.currentWord;
 	}
 
+	get previewWord() {
+		return this.pool.peekNext();
+	}
+
 	get score(): number {
 		return this.pool.words.filter((w) => w.wasGuessed).length;
 	}

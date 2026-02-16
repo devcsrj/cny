@@ -105,6 +105,7 @@ export class CharadesState {
 
 	getData(): CharadesStateData {
 		const ctx = this.service.context;
+		const currentTeam = this.getCurrentTeam();
 		return {
 			teams: Array.from(ctx.teams.values()).map((t) => ({
 				id: t.id,
@@ -117,7 +118,8 @@ export class CharadesState {
 			activeTeamId: ctx.activeTeamId,
 			status: this.status,
 			timer: ctx.timer.state,
-			currentWord: this.getCurrentWord()?.text ?? null,
+			currentWord: currentTeam?.currentWord?.text ?? null,
+			previewWord: currentTeam?.previewWord?.text ?? null,
 			activeTurn: ctx.activeTurn?.getData() ?? null
 		};
 	}

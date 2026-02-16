@@ -4,13 +4,16 @@
 	import GameStage from './GameStage.svelte';
 	import ActionZone from './ActionZone.svelte';
 	import SetupTray from './SetupTray.svelte';
-	import type { CharadesGM } from './gm.svelte.js';
+	import type { Charades } from '$lib/components/charades/index.js';
 
-	let { gm }: { gm: CharadesGM } = $props();
+	let { game }: { game: Charades } = $props();
 
 	function handleReset() {
 		if (confirm('Are you sure you want to reset the entire game?')) {
-			gm.resetGame();
+			game.send({ type: 'RESET' });
+			game.teams.forEach((t) => {
+				game.send({ type: 'RESET_TEAM', id: t.id });
+			});
 		}
 	}
 </script>
@@ -18,48 +21,51 @@
 <div
 	class="mx-auto flex h-screen max-w-md flex-col overflow-hidden border-x bg-background text-foreground"
 >
-	<GMHeader status={gm.game.status} timeLeft={gm.game.timeLeft} onReset={handleReset} />
+	<GMHeader status={game.status} timeLeft={game.timeLeft} onReset={handleReset} />
 
 	<TeamDashboard
-		teams={gm.teams}
-		activeTeamId={gm.activeTeamId}
-		onSelectTeam={(id) => gm.selectTeam(id)}
+		teams={game.teams}
+		activeTeamId={game.activeTeamId}
+		onSelectTeam={(id) => game.send({ type: 'SELECT_TEAM', teamId: id })}
 		onUpdateTeam={(id, name, words) => {
-			gm.setTeamName(id, name);
-			gm.setTeamWords(id, words);
+			game.send({ type: 'UPDATE_TEAM', id, name, words });
 		}}
-		onDeleteTeam={(id) => gm.deleteTeam(id)}
-		onAddTeam={() => gm.addTeam()}
-		disabled={gm.game.status !== 'waiting'}
+		onDeleteTeam={(id) => game.send({ type: 'DELETE_TEAM', id })}
+		onAddTeam={() => game.send({ type: 'ADD_TEAM' })}
+		disabled={game.status !== 'waiting'}
 	/>
 
-	<GameStage
-		status={gm.game.status}
-		word={gm.game.word}
-		nextWord={gm.nextWord}
-		correctWords={gm.game.correctWords}
-		missedWords={gm.game.missedWords}
-	/>
+	<GameStage {game} />
 
-	{#if gm.game.status === 'waiting'}
+	{#if game.status === 'waiting'}
 		<div class="mt-auto">
 			<SetupTray
-				duration={gm.duration}
-				onSetDuration={(s) => gm.setDuration(s)}
-				onStart={() => gm.startRound()}
-				canStart={gm.activeTeamId !== null}
+				duration={game.duration}
+				onSetDuration={(s) => game.send({ type: 'SET_DURATION', durationMs: s * 1000 })}
+				onStart={() => game.send({ type: 'START' })}
+				canStart={game.activeTeamId !== null}
 			/>
 		</div>
 	{:else}
 		<div class="mt-auto">
 			<ActionZone
-				status={gm.game.status}
-				canAction={!!gm.game.word}
-				onCorrect={() => gm.handleCorrect()}
-				onPass={() => gm.handleMiss()}
-				onPause={() => gm.pause()}
-				onResume={() => gm.resume()}
-				onNext={() => gm.prepareNextRound()}
+				status={game.status}
+				canAction={!!game.word}
+				onCorrect={() =>
+					game.send({
+						type: 'MARK_CORRECT',
+						teamId: game.activeTeamId!,
+						word: game.word
+					})}
+				onPass={() =>
+					game.send({
+						type: 'MARK_MISSED',
+						teamId: game.activeTeamId!,
+						word: game.word
+					})}
+				onPause={() => game.send({ type: 'PAUSE' })}
+				onResume={() => game.send({ type: 'RESUME' })}
+				onNext={() => game.send({ type: 'RESET' })}
 			/>
 		</div>
 	{/if}

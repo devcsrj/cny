@@ -1,62 +1,57 @@
 <script lang="ts">
 	import { cn } from '$lib/utils.js';
+	import type { Charades } from '$lib/components/charades/index.js';
 
-	let {
-		word = '',
-		nextWord = '',
-		status = 'waiting',
-		correctWords = [],
-		missedWords = []
-	}: {
-		word: string;
-		nextWord?: string;
-		status: string;
-		correctWords?: string[];
-		missedWords?: string[];
-	} = $props();
+	let { game }: { game: Charades } = $props();
+
+	let container = $state<HTMLDivElement>();
+
+	$effect(() => {
+		if (game.word && container) {
+			const active = container.querySelector('[data-active="true"]');
+			if (active) {
+				active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}
+	});
 </script>
 
-<div class="flex flex-1 flex-col items-center justify-center space-y-8 p-6 text-center">
-	{#if status === 'playing' || status === 'paused'}
-		<div class="space-y-2">
+<div
+	class="flex flex-1 flex-col items-center justify-center space-y-8 overflow-hidden p-6 text-center"
+>
+	{#if game.status === 'playing' || game.status === 'paused'}
+		<div class="flex w-full flex-col items-center space-y-4">
 			<span class="text-xs font-medium tracking-widest text-muted-foreground/60 uppercase">
-				Current Word
+				Word Reel
 			</span>
-			<h1 class="text-5xl leading-tight font-black tracking-tight break-words uppercase">
-				{word || '---'}
-			</h1>
+
+			<div
+				bind:this={container}
+				class="no-scrollbar flex max-h-[200px] w-full flex-col items-center space-y-2 overflow-y-auto py-10"
+			>
+				{#if game.activeTeam}
+					{#each game.activeTeam.words as w (w)}
+						{@const isGuessed = game.activeTeam.guessedWords.includes(w)}
+						{@const isActive = game.word === w}
+						<div
+							data-active={isActive}
+							class={cn(
+								'text-lg transition-all duration-300',
+								isActive
+									? 'scale-110 text-3xl font-black text-foreground'
+									: 'font-medium text-muted-foreground/40',
+								isGuessed && 'text-green-500/60'
+							)}
+						>
+							<span class={cn(isGuessed && 'line-through')}>
+								{isGuessed ? '✓ ' : ''}{w}
+							</span>
+						</div>
+					{/each}
+				{/if}
+			</div>
 		</div>
-
-		{#if nextWord}
-			<div class="animate-in duration-500 fade-in slide-in-from-bottom-2">
-				<span class="text-[10px] font-bold tracking-widest text-muted-foreground/40 uppercase">
-					Up Next
-				</span>
-				<p class="text-sm font-semibold text-muted-foreground/80">
-					{nextWord}
-				</p>
-			</div>
-		{/if}
-
-		{#if correctWords.length > 0 || missedWords.length > 0}
-			<div class="mt-4 flex w-full flex-wrap justify-center gap-1.5 overflow-hidden px-2">
-				{#each correctWords as w, i (i)}
-					<div
-						class="rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-600 ring-1 ring-green-500/20 ring-inset"
-					>
-						{w}
-					</div>
-				{/each}
-				{#each missedWords as w, i (i)}
-					<div
-						class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground ring-1 ring-foreground/5 ring-inset"
-					>
-						{w}
-					</div>
-				{/each}
-			</div>
-		{/if}
-	{:else if status === 'waiting'}
+	{:else if game.status === 'waiting'}
 		<div class="animate-in space-y-4 duration-700 zoom-in-95 fade-in">
 			<div
 				class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10"
@@ -68,7 +63,7 @@
 				Select a team and duration below to begin the round.
 			</p>
 		</div>
-	{:else if status === 'finished'}
+	{:else if game.status === 'finished'}
 		<div class="space-y-2">
 			<h2 class="text-3xl font-black tracking-tighter text-destructive uppercase italic">
 				Time's Up!
@@ -77,3 +72,13 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	.no-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+</style>

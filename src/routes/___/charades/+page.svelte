@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import CharadesGMController from '$lib/components/charades-gm/CharadesGMController.svelte';
-	import { CharadesGM } from '$lib/components/charades-gm/gm.svelte.js';
+	import { Charades } from '$lib/components/charades/index.js';
 	import type { CharadesMessage } from '$lib/types/charades';
 
-	const gm = new CharadesGM();
+	const game = new Charades();
 
 	onMount(() => {
 		(async () => {
@@ -12,7 +12,7 @@
 			try {
 				const res = await fetch('/___/charades');
 				const state = await res.json();
-				gm.syncWithServer(state);
+				game.update(state);
 			} catch (e) {
 				console.error('Failed to load initial state', e);
 			}
@@ -23,7 +23,9 @@
 		const es = new EventSource(path);
 		es.addEventListener('message', (e) => {
 			const payload = JSON.parse(e.data) as CharadesMessage;
-			gm.applyCommand(payload);
+			if (payload.type === 'SYNC_STATE') {
+				game.update(payload.state);
+			}
 		});
 
 		return () => {
@@ -32,4 +34,4 @@
 	});
 </script>
 
-<CharadesGMController {gm} />
+<CharadesGMController {game} />

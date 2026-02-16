@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { CharadesGame, Charades, dispatch } from '$lib/components/charades/index.js';
+	import { CharadesGame, Charades } from '$lib/components/charades/index.js';
 	import type { CharadesMessage } from '$lib/types/charades';
 
-	const game = new Charades('', 60);
+	const game = new Charades();
 
 	onMount(() => {
 		(async () => {
@@ -22,7 +22,9 @@
 		const es = new EventSource(path);
 		es.addEventListener('message', async (e) => {
 			const payload = JSON.parse(e.data) as CharadesMessage;
-			dispatch(game, payload);
+			if (payload.type === 'SYNC_STATE') {
+				game.update(payload.state);
+			}
 		});
 
 		return () => {

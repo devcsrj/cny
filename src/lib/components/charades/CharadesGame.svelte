@@ -4,7 +4,7 @@
 	import CharadesWord from './CharadesWord.svelte';
 	import TimesUpOverlay from './TimesUpOverlay.svelte';
 	import TimerDisplay from './TimerDisplay.svelte';
-	import type { Charades } from './charades.svelte.js';
+	import type { Charades } from './index.js';
 
 	let { game }: { game: Charades } = $props();
 
