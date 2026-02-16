@@ -1,5 +1,5 @@
 export class AudioController {
-	private music: HTMLAudioElement | null = null;
+	private bgm: HTMLAudioElement | null = null;
 	private sfx = new Map<string, HTMLAudioElement>();
 
 	private _volume = $state(0.5);
@@ -10,8 +10,8 @@ export class AudioController {
 
 	constructor() {
 		if (typeof window !== 'undefined') {
-			this.music = new Audio('/audio/music-play.mp3');
-			this.music.loop = true;
+			this.bgm = new Audio('/audio/bgm.mp3');
+			this.bgm.loop = true;
 
 			this.sfx.set('correct', new Audio('/audio/sfx-correct.wav'));
 			this.sfx.set('victory', new Audio('/audio/sfx-victory.wav'));
@@ -21,7 +21,7 @@ export class AudioController {
 
 	set volume(v: number) {
 		this._volume = v;
-		if (this.music) this.music.volume = v * this.BGM_MULTIPLIER;
+		if (this.bgm) this.bgm.volume = v * this.BGM_MULTIPLIER;
 	}
 
 	set enabled(e: boolean) {
@@ -39,31 +39,31 @@ export class AudioController {
 				.catch((e) => console.error('Audio unlock failed:', e));
 		};
 
-		if (this.music) silentPlay(this.music);
+		if (this.bgm) silentPlay(this.bgm);
 		this.sfx.forEach(silentPlay);
 	}
 
 	playMusic(rate = 1.0) {
-		if (!this._enabled || !this.music) return;
-		this.music.playbackRate = rate;
-		this.music.volume = this._volume * this.BGM_MULTIPLIER;
-		this.music.play().catch(() => {});
+		if (!this._enabled || !this.bgm) return;
+		this.bgm.playbackRate = rate;
+		this.bgm.volume = this._volume * this.BGM_MULTIPLIER;
+		this.bgm.play().catch(() => {});
 	}
 
 	pauseMusic(dim = false) {
-		if (!this.music) return;
+		if (!this.bgm) return;
 		if (dim) {
-			this.music.volume = this._volume * this.BGM_MULTIPLIER * 0.2;
+			this.bgm.volume = this._volume * this.BGM_MULTIPLIER * 0.2;
 		} else {
-			this.music.pause();
+			this.bgm.pause();
 		}
 	}
 
 	stopAll() {
-		if (this.music) {
-			this.music.pause();
-			this.music.currentTime = 0;
-			this.music.playbackRate = 1.0;
+		if (this.bgm) {
+			this.bgm.pause();
+			this.bgm.currentTime = 0;
+			this.bgm.playbackRate = 1.0;
 		}
 		this.sfx.forEach((s) => {
 			s.pause();
@@ -82,16 +82,16 @@ export class AudioController {
 	}
 
 	rampPlaybackRate(target: number, duration = 1000) {
-		if (!this.music || !this._enabled) return;
+		if (!this.bgm || !this._enabled) return;
 		const steps = 20;
 		const interval = duration / steps;
-		const start = this.music.playbackRate;
+		const start = this.bgm.playbackRate;
 		const delta = target - start;
 		let step = 0;
 
 		const timer = setInterval(() => {
 			step++;
-			if (this.music) this.music.playbackRate = start + delta * (step / steps);
+			if (this.bgm) this.bgm.playbackRate = start + delta * (step / steps);
 			if (step >= steps) clearInterval(timer);
 		}, interval);
 	}
