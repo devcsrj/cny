@@ -3,6 +3,7 @@ import { Timer } from '../timer';
 import { Team } from './team';
 import type { CharadesStateData, CharadesStatus } from '$lib/types/charades';
 import { createCharadesMachine, type CharadesContext, type CharadesEvent } from './machine';
+import { GAME_MASTER } from '../bus';
 
 export class CharadesState {
 	private service: Service<ReturnType<typeof createCharadesMachine>>;
@@ -22,7 +23,14 @@ export class CharadesState {
 
 		const machine = createCharadesMachine(initialContext);
 		this.service = interpret(machine, () => {
-			// onChange
+			this.broadcast();
+		});
+	}
+
+	private broadcast() {
+		GAME_MASTER.emit('charades:command', {
+			type: 'SYNC_STATE',
+			state: this.getState()
 		});
 	}
 
@@ -39,7 +47,11 @@ export class CharadesState {
 	}
 
 	startTimer() {
-		this.send({ type: 'START' });
+		if (this.status === 'paused') {
+			this.send({ type: 'RESUME' });
+		} else {
+			this.send({ type: 'START' });
+		}
 	}
 
 	pauseTimer() {
@@ -65,13 +77,6 @@ export class CharadesState {
 
 	resetTeam(id: Team['id']) {
 		this.send({ type: 'RESET_TEAM', id });
-	}
-
-	nextWord() {
-		const team = this.getCurrentTeam();
-		if (team) {
-			team.nextWord();
-		}
 	}
 
 	getCurrentWord() {
