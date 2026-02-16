@@ -1,18 +1,43 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import DrainingTank from './DrainingTank.svelte';
 	import CharadesWord from './CharadesWord.svelte';
 	import FinishOverlay from './FinishOverlay.svelte';
 	import Leaderboard from './Leaderboard.svelte';
 	import TimerDisplay from './TimerDisplay.svelte';
-	import type { Charades } from './index.js';
+	import CharadesAudio from './CharadesAudio.svelte';
+	import { Charades } from './game.svelte.js';
+	import { Settings, Volume2, VolumeX, X } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let { game }: { game: Charades } = $props();
+
+	let audioEnabled = $state(false);
+	let masterVolume = $state(0.5);
+	let showSettings = $state(false);
+	let audioRef: { unlock: () => void } | null = $state(null);
+
+	onMount(() => {
+		const storedEnabled = localStorage.getItem('charades_audio_enabled');
+		const storedVolume = localStorage.getItem('charades_master_volume');
+		if (storedEnabled !== null) audioEnabled = storedEnabled === 'true';
+		if (storedVolume !== null) masterVolume = parseFloat(storedVolume);
+	});
+
+	$effect(() => {
+		localStorage.setItem('charades_audio_enabled', audioEnabled.toString());
+	});
+
+	$effect(() => {
+		localStorage.setItem('charades_master_volume', masterVolume.toString());
+	});
 
 	onDestroy(() => {
 		game.destroy();
 	});
 </script>
+
+<CharadesAudio bind:this={audioRef} {game} volume={masterVolume} enabled={audioEnabled} />
 
 <div
 	class="fixed inset-0 flex h-screen w-screen flex-col items-center justify-center overflow-hidden bg-background select-none"
@@ -36,7 +61,86 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Subtle Settings Toggle -->
+	<div class="absolute right-4 bottom-4 z-[70] opacity-20 transition-opacity hover:opacity-100">
+		<Button
+			variant="ghost"
+			size="icon"
+			onclick={() => (showSettings = true)}
+			class="h-12 w-12 rounded-full"
+		>
+			<Settings class="h-6 w-6" />
+		</Button>
+	</div>
 </div>
+
+{#if showSettings}
+	<div
+		class="fixed inset-0 z-[100] flex animate-in items-center justify-center bg-black/40 backdrop-blur-sm duration-200 fade-in"
+	>
+		<div
+			class="w-full max-w-sm animate-in rounded-3xl border bg-background p-8 shadow-2xl duration-200 zoom-in-95"
+		>
+			<div class="mb-8 flex items-center justify-between">
+				<h2 class="text-2xl font-black tracking-tight uppercase">Audio Settings</h2>
+				<Button variant="ghost" size="icon" onclick={() => (showSettings = false)}>
+					<X class="h-6 w-6" />
+				</Button>
+			</div>
+
+			<div class="space-y-8">
+				<div class="flex items-center justify-between gap-4">
+					<div class="flex flex-col">
+						<span class="text-lg font-bold">Sound & Music</span>
+						<span class="text-sm text-muted-foreground"
+							>Enable game audio (required by browser)</span
+						>
+					</div>
+					<Button
+						variant={audioEnabled ? 'default' : 'outline'}
+						onclick={() => {
+							audioEnabled = !audioEnabled;
+							if (audioEnabled) audioRef?.unlock();
+						}}
+						class="min-w-24"
+					>
+						{audioEnabled ? 'Enabled' : 'Disabled'}
+					</Button>
+				</div>
+
+				<div class="space-y-4">
+					<div class="flex items-center justify-between">
+						<span class="text-lg font-bold">Volume</span>
+						<span class="font-mono text-sm">{Math.round(masterVolume * 100)}%</span>
+					</div>
+					<div class="flex items-center gap-4">
+						{#if masterVolume === 0}
+							<VolumeX class="h-5 w-5 text-muted-foreground" />
+						{:else}
+							<Volume2 class="h-5 w-5 text-muted-foreground" />
+						{/if}
+						<input
+							type="range"
+							min="0"
+							max="1"
+							step="0.01"
+							bind:value={masterVolume}
+							class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
+						/>
+					</div>
+				</div>
+
+				<Button
+					class="h-12 w-full text-lg font-bold uppercase"
+					onclick={() => (showSettings = false)}
+				>
+					Done
+				</Button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 {#if game.status === 'finished'}
 	<FinishOverlay {game} />

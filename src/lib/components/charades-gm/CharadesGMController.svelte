@@ -4,7 +4,7 @@
 	import GameStage from './GameStage.svelte';
 	import ActionZone from './ActionZone.svelte';
 	import SetupTray from './SetupTray.svelte';
-	import type { Charades } from '$lib/components/charades/index.js';
+	import { Charades } from '$lib/components/charades/game.svelte.js';
 
 	let { game }: { game: Charades } = $props();
 

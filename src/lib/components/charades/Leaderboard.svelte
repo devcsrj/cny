@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Charades } from './index.js';
+	import { Charades } from './game.svelte.js';
 	import { cn } from '$lib/utils.js';
 	import JSConfetti from 'js-confetti';
 

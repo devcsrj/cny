@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Charades } from './index.js';
+	import { Charades } from './game.svelte.js';
 
 	let { game }: { game: Charades } = $props();
 	let height = $derived((game.timeLeft / game.duration) * 100);
