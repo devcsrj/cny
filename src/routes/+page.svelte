@@ -128,10 +128,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>CNY 2026 | Year of the Fire Horse</title>
-</svelte:head>
-
 <main
 	class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-red-950 px-4 text-amber-100 selection:bg-amber-500/30"
 >
