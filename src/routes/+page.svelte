@@ -1,11 +1,49 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Flame, Sparkles } from '@lucide/svelte';
+	import { Flame, Sparkles, Volume2, VolumeX } from '@lucide/svelte';
 	import JSConfetti from 'js-confetti';
 	import { fade, fly } from 'svelte/transition';
 
+	// YouTube IFrame Player API Types
+	interface YTPlayer {
+		mute(): void;
+		unMute(): void;
+		playVideo(): void;
+	}
+
+	interface YTPlayerEvent {
+		target: YTPlayer;
+	}
+
+	interface YTPlayerConfig {
+		height: string;
+		width: string;
+		videoId: string;
+		playerVars: {
+			autoplay: number;
+			controls: number;
+			disablekb: number;
+			enablejsapi: number;
+			loop: number;
+			playlist: string;
+			modestbranding: number;
+		};
+		events: {
+			onReady: (event: YTPlayerEvent) => void;
+		};
+	}
+
+	interface YTWindow extends Window {
+		onYouTubeIframeAPIReady?: () => void;
+		YT?: {
+			Player: new (id: string, config: YTPlayerConfig) => YTPlayer;
+		};
+	}
+
 	let jsConfetti = $state<JSConfetti | null>(null);
 	let blessingIndex = $state(0);
+	let isMuted = $state(true);
+	let player = $state<YTPlayer | null>(null);
 
 	const BLESSINGS = [
 		{ zh: '新年快乐', en: 'Happy New Year' },
@@ -18,6 +56,37 @@
 
 	onMount(() => {
 		jsConfetti = new JSConfetti();
+
+		// Load YouTube IFrame Player API
+		const tag = document.createElement('script');
+		tag.src = 'https://www.youtube.com/iframe_api';
+		const firstScriptTag = document.getElementsByTagName('script')[0];
+		firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+		const ytWindow = window as YTWindow;
+		ytWindow.onYouTubeIframeAPIReady = () => {
+			if (ytWindow.YT) {
+				player = new ytWindow.YT.Player('youtube-player', {
+					height: '0',
+					width: '0',
+					videoId: 'INKsLDB4-EQ',
+					playerVars: {
+						autoplay: 1,
+						controls: 0,
+						disablekb: 1,
+						enablejsapi: 1,
+						loop: 1,
+						playlist: 'INKsLDB4-EQ',
+						modestbranding: 1
+					},
+					events: {
+						onReady: (event) => {
+							event.target.mute();
+						}
+					}
+				});
+			}
+		};
 
 		// Auto-cycle blessings every 6 seconds
 		const blessingTimer = setInterval(() => {
@@ -38,6 +107,18 @@
 		};
 	});
 
+	function toggleMute() {
+		if (!player) return;
+		if (isMuted) {
+			player.unMute();
+			player.playVideo();
+			isMuted = false;
+		} else {
+			player.mute();
+			isMuted = true;
+		}
+	}
+
 	function triggerConfetti() {
 		jsConfetti?.addConfetti({
 			emojis: ['🧧', '✨', '🐎', '🔥', '🏮', '🎆'],
@@ -54,9 +135,24 @@
 <main
 	class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-red-950 px-4 text-amber-100 selection:bg-amber-500/30"
 >
+	<!-- YouTube Player (Hidden) -->
+	<div id="youtube-player" class="absolute -z-50 opacity-0"></div>
+
+	<!-- Audio Toggle -->
+	<button
+		onclick={toggleMute}
+		class="fixed top-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/30 bg-red-900/40 text-amber-400 backdrop-blur-md transition-all hover:scale-110 hover:bg-red-800/60 active:scale-95"
+		aria-label={isMuted ? 'Unmute' : 'Mute'}
+	>
+		{#if isMuted}
+			<VolumeX class="h-6 w-6" />
+		{:else}
+			<Volume2 class="h-6 w-6" />
+		{/if}
+	</button>
 	<!-- Ambient Background Elements (Embers) -->
 	<div class="pointer-events-none absolute inset-0 overflow-hidden">
-		{#each Array(20) as _}
+		{#each Array(20) as _, i (i)}
 			<div
 				class="absolute animate-pulse rounded-full bg-amber-500/10 blur-xl"
 				style="
@@ -72,7 +168,7 @@
 
 	<!-- Rising Lanterns (Subtle) -->
 	<div class="pointer-events-none absolute inset-0 z-0 opacity-20">
-		{#each Array(10) as _}
+		{#each Array(10) as _, i (i)}
 			<div
 				class="lantern absolute bottom-[-100px]"
 				style="
