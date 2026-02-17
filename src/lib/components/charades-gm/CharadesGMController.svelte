@@ -72,6 +72,7 @@
 				onSetDuration={(s) => game.send({ type: 'SET_DURATION', durationMs: s * 1000 })}
 				onStart={() => game.send({ type: 'PREPARE' })}
 				canStart={game.activeTeamId !== null}
+				durations={[30, 60, 90, 120]}
 			/>
 		</div>
 	{:else}

@@ -58,7 +58,7 @@
 	/>
 
 	<TeamDashboard
-		teams={game.teams as any}
+		teams={game.teams}
 		activeTeamId={game.activeTeamId}
 		onSelectTeam={(id) => game.send({ type: 'SELECT_TEAM', teamId: id })}
 		onUpdateTeam={(id, name, words) => {
@@ -84,6 +84,7 @@
 				onSetDuration={(s) => game.send({ type: 'SET_DURATION', durationMs: s * 1000 })}
 				onStart={() => game.send({ type: 'PREPARE' })}
 				canStart={game.activeTeamId !== null && game.activeTeam!.words.length > 0}
+				durations={[120, 180, 240, 300]}
 			/>
 		</div>
 	{:else}

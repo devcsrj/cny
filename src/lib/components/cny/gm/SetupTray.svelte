@@ -7,16 +7,16 @@
 		label = 'START ROUND',
 		onSetDuration,
 		onStart,
-		canStart = false
+		canStart = false,
+		durations
 	}: {
 		duration: number;
 		label?: string;
 		onSetDuration: (seconds: number) => void;
 		onStart: () => void;
 		canStart: boolean;
+		durations: number[];
 	} = $props();
-
-	const durations = [30, 60, 90, 120];
 </script>
 
 <div class="space-y-6 rounded-t-3xl border-t bg-secondary/30 p-6 shadow-2xl">
